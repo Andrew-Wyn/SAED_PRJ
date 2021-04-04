@@ -6,5 +6,5 @@ services:
       - "80:80"
     volumes:
       - "./backend:/app"
-      - "./www:/frontend"
+      - "./www:/srv/www"
     working_dir: /app
