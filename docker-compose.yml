@@ -1,0 +1,10 @@
+version: '3.4'
+services:
+  backend:
+    image: tiangolo/uwsgi-nginx-flask:python3.8
+    ports:
+      - "80:80"
+    volumes:
+      - "./app:/app/"
+      - "./angular:/app/frontend"
+    working_dir: /app
