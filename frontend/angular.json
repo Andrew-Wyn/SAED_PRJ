@@ -19,6 +19,7 @@
           "options": {
             "outputPath": "../www",
             "index": "src/index.html",
+            "baseHref": "/saed",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
