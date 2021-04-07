@@ -5,12 +5,12 @@ from module_try.utils import prova
 app = Flask(__name__)
 
 
-@app.route("/api")
+@app.route("/saed/api/")
 def hello():
     return "Hello World from Flask in a uWSGI Nginx Docker container with \
      Python 3.8 (from the example template)"
 
-@app.route("/api/prova")
+@app.route("/saed/api/prova")
 def api_prova():
     return prova()
 
