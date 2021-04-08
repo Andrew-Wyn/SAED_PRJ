@@ -22,8 +22,15 @@ destroy:
 	docker-compose kill
 	docker-compose rm -vf
 
+
 start:
 	docker-compose start
 
 stop:
 	docker-compose stop
+
+restart: destroy compose
+
+build_angular:
+	@echo "=========== Building angular app... "
+	@cd frontend && ng build
