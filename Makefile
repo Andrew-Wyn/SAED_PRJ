@@ -1,36 +1,36 @@
-.PHONY: requirements compose destroy start stop
+.PHONY: help
 
--include .env
+all: help
 
-all: requirements destroy compose
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-requirements:
+requirements: ## Check if docker binaries exist
 	@echo '============ Checking if docker binaries exist...'
 	@docker --version
 	@docker-compose --version
 	@echo '============ OK!'
 
-compose:
+compose: ## Create docker envirornment
 	@echo '============ Creating docker environment...'
 	docker-compose build --pull
 	docker-compose up -d
 	@echo '============ Docker environment for your project successfully created.'
 
-destroy:
+destroy: ## Cleaning up docker environment
 	@echo "============ Cleaning up docker environment..."
 	docker-compose down -v
 	docker-compose kill
 	docker-compose rm -vf
 
-
-start:
+start: ## Start services 
 	docker-compose start
 
-stop:
+stop: ## Stop services
 	docker-compose stop
 
-restart: destroy compose
+restart: destroy compose ## Restart environment
 
-build_angular:
+build_angular: ## Build angular project inside frontend directory
 	@echo "=========== Building angular app... "
 	@cd frontend && ng build
