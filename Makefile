@@ -1,4 +1,4 @@
-.PHONY: help
+.PHONY: all help requirements compose destroy rebuild start stop restart angular-build
 
 all: help
 
@@ -13,24 +13,31 @@ requirements: ## Check if docker binaries exist
 
 compose: ## Create docker envirornment
 	@echo '============ Creating docker environment...'
+	@cd saed_site
 	docker-compose build --pull
 	docker-compose up -d
 	@echo '============ Docker environment for your project successfully created.'
 
-destroy: ## Cleaning up docker environment
-	@echo "============ Cleaning up docker environment..."
+destroy: ## Clean up docker environment
+	@echo '============ Cleaning up docker environment...'
+	@cd saed_site
 	docker-compose down -v
 	docker-compose kill
 	docker-compose rm -vf
+	@echo '============ Docker environment for your project successfully destroyed.'
 
-start: ## Start services 
+rebuild: destroy compose ## Recreate docker environment
+
+start: ## Start services
+	@cd saed_site
 	docker-compose start
 
 stop: ## Stop services
+	@cd saed_site
 	docker-compose stop
 
-restart: destroy compose ## Restart environment
+restart: stop start ## Restart services
 
-build_angular: ## Build angular project inside frontend directory
+angular-build: ## Build frontend
 	@echo "=========== Building angular app... "
-	@cd frontend && ng build
+	ng build
