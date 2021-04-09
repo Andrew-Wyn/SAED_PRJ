@@ -38,6 +38,10 @@ stop: ## Stop services
 
 restart: stop start ## Restart services
 
-angular-build: ## Build frontend
+node_modules: package.json
+	@echo "=========== Installing angular's dependencies... "
+	@npm install
+
+angular-build: node_modules ## Build frontend
 	@echo "=========== Building angular app... "
-	ng build
+	@npm run ng build
