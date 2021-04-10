@@ -20,6 +20,7 @@
             "outputPath": "saed_site/frontend",
             "index": "src/index.html",
             "baseHref": "/saed",
+            "deployUrl": "/saed/",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
