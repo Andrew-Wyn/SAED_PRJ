@@ -13,7 +13,7 @@ requirements: ## Check if docker binaries exist
 
 compose: ## Create docker envirornment
 	@echo '============ Creating docker environment...'
-	docker-compose build --pull
+	docker-compose build --pull --build-arg UWSGI_UID="$$(id -u)" --build-arg UWSGI_GID="$$(id -g)"
 	docker-compose up -d
 	@echo '============ Docker environment for your project successfully created.'
 
