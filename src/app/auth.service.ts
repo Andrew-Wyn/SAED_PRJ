@@ -30,7 +30,7 @@ export class AuthService {
   oauthGoogleConfig() {
     this.oauthService.configure(googleAuthConfig);
     this.oauthService.redirectUri = window.location.origin + '/',
-    this.oauthService.loadDiscoveryDocumentAndTryLogin()
+    this.oauthService.loadDiscoveryDocumentAndLogin()
   }
 
   oauthPasswordFlowConfig() {
@@ -42,12 +42,16 @@ export class AuthService {
     this.oauthService.loadUserProfile().then(up => (this.userProfile = up));
   }
 
-  get access_token() {
+  get accessToken() {
     return this.oauthService.getAccessToken();
   }
 
-  get access_token_expiration() {
+  get accessTokenExpiration() {
     return this.oauthService.getAccessTokenExpiration();
+  }
+
+  get hasValidAccessToken() {
+    return this.oauthService.hasValidAccessToken();
   }
 
   loginPersonal() { // la logica di autenticazione va qua
