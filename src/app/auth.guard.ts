@@ -3,13 +3,16 @@ import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, UrlTr
 import { Observable } from 'rxjs';
 
 import { AuthService } from './auth.service'
+import { OAuthService } from 'angular-oauth2-oidc'
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService,
+              private router: Router,
+              private oauthService: OAuthService) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -20,7 +23,7 @@ export class AuthGuard implements CanActivate {
   }
   
   checkLogin(url: string): true|UrlTree {
-    if (this.authService.isLoggedIn) { return true; }
+    if (this.oauthService.hasValidAccessToken()) { return true; }
 
     // Store the attempted URL for redirecting
     this.authService.redirectUrl = url;
