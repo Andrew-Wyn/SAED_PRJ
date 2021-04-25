@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuard } from './auth.guard'
+import { LoginGuard } from './login.guard'
+
 import { LoginComponent } from './login/login.component'
 import { RegisterComponent } from './register/register.component'
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component'
@@ -17,11 +19,10 @@ const routes: Routes = [
         path: 'home', // child route path
         component: HomeComponent, // child route component that the router renders
       },
-      //{ path: '**', component: PageNotFoundComponent },  // Wildcard route for a 404 page
     ]
   },
   { path: 'register', component: RegisterComponent },
-  { path: 'login', component: LoginComponent },
+  { path: 'login', component: LoginComponent, canActivate: [LoginGuard]},
   { path: '**', component: PageNotFoundComponent },  // Wildcard route for a 404 page
 ];
 
