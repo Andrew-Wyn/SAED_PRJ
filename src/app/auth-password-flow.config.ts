@@ -7,7 +7,7 @@ export const authPasswordFlowConfig: AuthConfig = {
   issuer: 'https://steyer-identity-server.azurewebsites.net/identity',
 
   // URL of the SPA to redirect the user after silent refresh
-  silentRefreshRedirectUri: window.location.origin + '/app/home',
+  silentRefreshRedirectUri: window.location.origin + '/saed',
 
   // The SPA's id. The SPA is registerd with this id at the auth-server
   clientId: 'demo-resource-owner',

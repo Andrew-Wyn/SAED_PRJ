@@ -6,9 +6,13 @@ export const googleAuthConfig: AuthConfig = {
   // Url of the Identity Provider
   issuer: 'https://accounts.google.com',
 
+  redirectUri: window.location.origin + '/saed',
+
+  // URL of the SPA to redirect the user after silent refresh
+  silentRefreshRedirectUri: window.location.origin + '/saed',
+
   // The SPA's id. The SPA is registerd with this id at the auth-server
-  clientId:
-    '1004270452653-m396kcs7jc3970turlp7ffh6bv4t1b86.apps.googleusercontent.com',
+  clientId: '857041042594-daels7me5n4totm455ontedlrjvnv4vo.apps.googleusercontent.com',
 
   strictDiscoveryDocumentValidation: false,
 

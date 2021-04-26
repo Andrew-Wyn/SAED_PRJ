@@ -14,7 +14,7 @@ export class AppComponent {
   title = 'Musin';
 
   constructor(private authService: AuthService) {
-    authService.oauthPasswordFlowConfig();    
-  }
+    this.authService.initConfig();
+}
 
 }
