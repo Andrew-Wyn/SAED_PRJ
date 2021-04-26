@@ -1,2 +1,9 @@
 <p>header works!</p>
+<div>
+{{authService.accessToken}}
+</div>
+<div>
+{{authService.email}}
+</div>
+<img [src]="authService.picture"/>
 <button (click)="logout()">Logout</button>
