@@ -1,1 +1,29 @@
-<p>register works!</p>
+<div class="card">
+    <img class="logo" alt="Musin" src="https://cdn0.iconfinder.com/data/icons/material-circle-apps/512/icon-music-material-design-512.png" />
+    <h2 class="title"> Sign in</h2>
+    <p class="subtitle">Have an account? <a routerLink="/login"> log In</a></p>
+
+ <form [formGroup]="registerForm" (ngSubmit)="register()">
+    <div class="email-login">
+       <label for="username"> <b>UserName</b></label>
+       <input type="text" placeholder="Enter Username" name="uname" formControlName="uName" required>
+       <label for="mail"><b>Email</b></label>
+       <input type="text" placeholder="Enter mail" name="mail" formControlName="mail" required>
+       <label for="psw"> <b>Password</b></label>
+       <input type="password" placeholder="Enter Password" name="psw" formControlName="password" required>
+       <label for="rep_psw"><b>Repeat Password</b></label>
+       <input type="password" placeholder="Repeat Password" name="rep_psw" formControlName="password_repeat" required>
+       <div>
+         <label for="musicista"><b>Musicista</b></label>
+         <input type="checkbox" name="musicista" formControlName="musicista">
+         &nbsp;
+         <label for="prop_loc"><b>Proprietario Locale</b></label>
+         <input type="checkbox" name="prop_loc" formControlName="prop_loc">
+         &nbsp;&nbsp;  
+         <label for="forn_strum"><b>Forniture Strumenti</b></label>
+         <input type="checkbox" name="forn_strum" formControlName="forn_strum">
+       </div>
+   </div>
+    <button type="submit" [disabled]="!registerForm.valid" class="cta-btn">Sign In</button>
+ </form>
+</div>
