@@ -35,7 +35,6 @@ import { EditProfileComponent } from './edit-profile/edit-profile.component';
     ReactiveFormsModule,
     OAuthModule.forRoot({
       resourceServer: {
-          allowedUrls: ['http://localhost:4200/saed/api'],
           sendAccessToken: true
       }
     }),    // The HttpClientInMemoryWebApiModule module intercepts HTTP requests
