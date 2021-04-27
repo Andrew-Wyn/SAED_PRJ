@@ -1,5 +1,5 @@
 <div class="card">
-       <img class="logo" alt="Google" src="https://cdn0.iconfinder.com/data/icons/material-circle-apps/512/icon-music-material-design-512.png" />
+       <img class="logo" alt="Musin" src="https://cdn0.iconfinder.com/data/icons/material-circle-apps/512/icon-music-material-design-512.png" />
        <h2 class="title"> Log in</h2>
        <p class="subtitle">Don't have an account? <a routerLink="/register"> sign Up</a></p>
  
@@ -9,16 +9,17 @@
              <p class="btn-text">Sign in with Google</p>
           </button>
        </div>
-    <form>
+
+    <form [formGroup]="profileForm" (ngSubmit)="loginPersonal()">
        <p class="or"><span>or</span></p>
  
        <div class="email-login">
           <label for="email"> <b>Email</b></label>
-          <input type="text" placeholder="Enter Email" name="uname" required>
+          <input type="text" placeholder="Enter Email" name="uname" formControlName="uName" required>
           <label for="psw"><b>Password</b></label>
-          <input type="password" placeholder="Enter Password" name="psw" required>
+          <input type="password" placeholder="Enter Password" name="psw" formControlName="password" required>
        </div>
-       <button (click)="loginPersonal()" class="cta-btn">Log In</button>
+       <button type="submit" [disabled]="!profileForm.valid" class="cta-btn">Log In</button>
        <a class="forget-pass" href="#">Forgot password?</a>
     </form>
  </div>

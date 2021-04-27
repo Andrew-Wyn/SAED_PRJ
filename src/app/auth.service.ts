@@ -82,18 +82,21 @@ export class AuthService {
     return this.oauthService.hasValidAccessToken();
   }
 
-  loginPersonal() { // la logica di autenticazione va qua
+  loginPersonal(uName: string, password: string) { // la logica di autenticazione va qua
+    console.log(uName);
+    console.log(password);
     this.oauthService
       .fetchTokenUsingPasswordFlowAndLoadUserProfile(
-        this.userName,
-        this.password
+        uName,
+        password
       )
       .then(() => {
         console.debug('successfully logged in');
         this.router.navigate([this.redirectUrl]);
       })
-      .catch(err => {
-        console.error('error logging in', err);
+      .catch(() => {
+        console.error("credenziali errate");
+        alert("Credenziali errate");
       });
   }
 
