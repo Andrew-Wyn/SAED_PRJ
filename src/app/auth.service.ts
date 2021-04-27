@@ -29,26 +29,37 @@ export class AuthService {
 
   initConfig() {
     if (sessionStorage.getItem('oauthType') == 'google') {
-      console.log("google");
+      
       this.oauthGoogleConfig();
-    } else {
-      console.log("personal");
-      this.oauthPasswordFlowConfig();
-    } 
-
+      /*
+        controllo per evitare di configurare google qual'ora
+        si è settata la chiave di sessione ma non si è richiesto il token
+        in tal caso si deve eliminare la scelta precedente (cookie google)
+        e settare la configurazione di login personale, se invece abbiamo anche un
+        token allora in tal caso significa che siamo nel flusso di google e dobbiamo
+        lasciare caricata la configurazione di google.
+        Per vedere se il token google è valido dobbiamo prima caricare la configurazione relativa. 
+      */
+      if (this.oauthService.hasValidAccessToken()) {
+        console.log("google");
+        return;
+      }
+      sessionStorage.removeItem('oauthType');
+    }
+    console.log("personal");
+    this.oauthPasswordFlowConfig();
   }
 
   oauthGoogleConfig() {
     this.oauthService.configure(googleAuthConfig);
-    this.oauthService.loadDiscoveryDocument();
     this.oauthService.setupAutomaticSilentRefresh();
     this.oauthService.tryLogin();
   }
 
   oauthPasswordFlowConfig() {
     this.oauthService.configure(authPasswordFlowConfig);
-    this.oauthService.loadDiscoveryDocument();
     this.oauthService.setupAutomaticSilentRefresh();
+    this.oauthService.loadDiscoveryDocument();
   }
 
   get email() {
@@ -79,7 +90,6 @@ export class AuthService {
       )
       .then(() => {
         console.debug('successfully logged in');
-        this.claims = this.oauthService.getIdentityClaims();
         this.router.navigate([this.redirectUrl]);
       })
       .catch(err => {
@@ -95,7 +105,7 @@ export class AuthService {
   }
 
   logout(): void {
-    this.oauthService.logOut(true);
+    this.oauthService.logOut();
     sessionStorage.removeItem('oauthType');
     this.initConfig();
     this.router.navigate(['/login']);
