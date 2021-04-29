@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, of, interval } from 'rxjs';
+import { Observable, of, interval, from } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, repeatWhen, tap } from 'rxjs/operators';
 
 
 import { AuthService } from '../auth.service'
+import { UserInfoService } from '../user-info.service'
 import { Notify } from '../notify'
 
 @Component({
@@ -37,11 +38,11 @@ export class HeaderComponent implements OnInit {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
 
-  constructor(private http: HttpClient, public authService: AuthService) {
+  constructor(private http: HttpClient, public authService: AuthService, public userInfoService: UserInfoService) {
   }
 
   ngOnInit(): void {
-    this.notifications$ = this.getNotify(this.authService.userInfo?.email);
+    this.notifications$ = this.getNotify(this.userInfoService.userInfo?.email);
   }
 
   getNotify(uid: any): Observable<Notify[]> {

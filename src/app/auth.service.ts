@@ -5,6 +5,7 @@ import { OAuthService, NullValidationHandler } from 'angular-oauth2-oidc'
 
 import { authPasswordFlowConfig } from './auth-password-flow.config'
 import { googleAuthConfig } from './auth-google.config'
+import { UserInfoService } from './user-info.service'
 
 import { UserInfo } from './userInfo'
 
@@ -15,15 +16,14 @@ export class AuthService {
 
   redirectUrl: string;
   claims: object | undefined;
-  
-  userInfo?: UserInfo;
 
   userName?: string;
   password?: string;
 
   constructor (
     private router: Router,
-    private oauthService: OAuthService
+    private oauthService: OAuthService,
+    private userInfoService: UserInfoService
   ) {
     this.redirectUrl = "";
 
@@ -33,16 +33,7 @@ export class AuthService {
     if (this.hasValidAccessToken) {
       // chiamare endpoint /api/get_user_info
       // mettere un cockie di sessione per user info o richiamare ?
-      this.userInfo = {
-        id: 1,
-        userName: "Pinco Pallo (Google)",
-        email: "google acc email",
-        dataNascita: "google nato ieri",
-        picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
-        musicista: true,
-        propLoc: false,
-        fornStrum: false
-     }
+      this.userInfoService.getUserInfo(this.email);
     }
   }
 
@@ -76,16 +67,7 @@ export class AuthService {
       onTokenReceived: context => {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
-        this.userInfo = {
-          id: 1,
-          userName: "Pinco Pallo (Google)",
-          email: "google acc email",
-          dataNascita: "google nato ieri",
-          picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
-          musicista: true,
-          propLoc: false,
-          fornStrum: false
-        };
+        this.userInfoService.getUserInfo(this.email);
       }
     });
   }
@@ -94,6 +76,10 @@ export class AuthService {
     this.oauthService.configure(authPasswordFlowConfig);
     this.oauthService.setupAutomaticSilentRefresh();
     this.oauthService.loadDiscoveryDocument();
+  }
+
+  get email() {
+    return (this.oauthService.getIdentityClaims as any)["email"];
   }
 
   get accessToken() {
@@ -119,16 +105,7 @@ export class AuthService {
       .then(() => {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
-        this.userInfo = {
-          id: 1,
-          userName: "Pinco Pallo (Personal)",
-          email: "personal acc email",
-          dataNascita: "personal nato ieri",
-          picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
-          musicista: false,
-          propLoc: true,
-          fornStrum: true
-        };
+        this.userInfoService.getUserInfo(this.email);
         this.router.navigate([this.redirectUrl]);
       })
       .catch(() => {
