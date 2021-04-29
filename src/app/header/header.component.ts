@@ -15,6 +15,8 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  // chiamare endpoint per far tornare le notifiche fillare eventuale array di oggetti notifiche
+
   logout() {
     this.authService.logout()
   }

@@ -67,7 +67,16 @@ export class AuthService {
   }
 
   get picture() {
+    console.log(this.oauthService.getIdentityClaims());
     return (this.oauthService.getIdentityClaims() as any)['picture']
+  }
+  
+  get name() {
+    return (this.oauthService.getIdentityClaims() as any)['name']
+  }
+
+  get locale() {
+    return (this.oauthService.getIdentityClaims() as any)['locale']
   }
 
   get accessToken() {
