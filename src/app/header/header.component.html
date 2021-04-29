@@ -18,7 +18,11 @@
                 <div class="notifications">
                     <img src="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-bell-512.png" class="bell-icon">
                     <div class="dropdown-notify-content">
-                        <div class="item-notify">ciclare e tornare notifiche</div>
+                        <div *ngFor="let notification of notifications$ | async" class="item-notify">
+                            {{notification.type}}
+                            <br>
+                            {{notification.text}}
+                        </div>
                     </div>
                 </div>
             </td>

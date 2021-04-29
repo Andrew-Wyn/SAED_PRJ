@@ -67,7 +67,6 @@ export class AuthService {
   }
 
   get picture() {
-    console.log(this.oauthService.getIdentityClaims());
     return (this.oauthService.getIdentityClaims() as any)['picture']
   }
   
