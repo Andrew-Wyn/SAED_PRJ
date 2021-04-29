@@ -1,1 +1,15 @@
-<p>home works!</p>
+<div class="home">
+    <h1>Welcome Back</h1>
+    <div *ngIf="authService.userInfo?.picture; else noPicture"><img class="logo-usr" [src]="authService.userInfo?.picture"/></div>
+    <ng-template #noPicture><img class="logo-usr" src="https://icon-library.com/images/no-user-image-icon/no-user-image-icon-23.jpg"/></ng-template>
+
+    <a routerLink="/app/editProfile"><button>change info</button></a>
+
+    <h3>Nome Utente: {{authService.userInfo?.userName}}</h3>
+    <h3>Email: {{authService.userInfo?.email}}</h3>
+    <h3>Data Nascita: {{authService.userInfo?.userName}}</h3>
+
+    <h3 *ngIf="authService.userInfo?.musicista">Account Musicista</h3>
+    <h3 *ngIf="authService.userInfo?.propLoc">Account Proprietario Locale</h3>
+    <h3 *ngIf="authService.userInfo?.fornStrum">Account Fornitore Strumenti</h3>
+</div>

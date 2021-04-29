@@ -9,6 +9,7 @@ import { RegisterComponent } from './register/register.component'
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component'
 import { MainAppComponent } from './main-app/main-app.component';
 import { HomeComponent } from './home/home.component';
+import { EditProfileComponent } from './edit-profile/edit-profile.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'app', pathMatch: 'full' },
@@ -19,6 +20,10 @@ const routes: Routes = [
         path: 'home', // child route path
         component: HomeComponent, // child route component that the router renders
       },
+      {
+        path: 'editProfile',
+        component: EditProfileComponent,
+      }
     ]
   },
   { path: 'register', component: RegisterComponent },
