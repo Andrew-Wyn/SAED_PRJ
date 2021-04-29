@@ -41,7 +41,7 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.notifications$ = this.getNotify(this.authService.email);
+    this.notifications$ = this.getNotify(this.authService.userInfo?.email);
   }
 
   getNotify(uid: any): Observable<Notify[]> {

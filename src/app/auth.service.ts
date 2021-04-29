@@ -6,6 +6,8 @@ import { OAuthService, NullValidationHandler } from 'angular-oauth2-oidc'
 import { authPasswordFlowConfig } from './auth-password-flow.config'
 import { googleAuthConfig } from './auth-google.config'
 
+import { UserInfo } from './userInfo'
+
 @Injectable({
   providedIn: 'root'
 })
@@ -13,9 +15,11 @@ export class AuthService {
 
   redirectUrl: string;
   claims: object | undefined;
+  
+  userInfo?: UserInfo;
 
-  userName: string;
-  password: string;
+  userName?: string;
+  password?: string;
 
   constructor (
     private router: Router,
@@ -23,8 +27,23 @@ export class AuthService {
   ) {
     this.redirectUrl = "";
 
-    this.userName = "max";
-    this.password = "geheim";
+    // this.userName = "max";
+    // this.password = "geheim";
+
+    if (this.hasValidAccessToken) {
+      // chiamare endpoint /api/get_user_info
+      // mettere un cockie di sessione per user info o richiamare ?
+      this.userInfo = {
+        id: 1,
+        userName: "Pinco Pallo (Google)",
+        email: "google acc email",
+        dataNascita: "google nato ieri",
+        picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
+        musicista: true,
+        propLoc: false,
+        fornStrum: false
+     }
+    }
   }
 
   initConfig() {
@@ -53,29 +72,28 @@ export class AuthService {
   oauthGoogleConfig() {
     this.oauthService.configure(googleAuthConfig);
     this.oauthService.setupAutomaticSilentRefresh();
-    this.oauthService.tryLogin();
+    this.oauthService.tryLogin({
+      onTokenReceived: context => {
+        // chiamare endpoint /api/get_user_info
+        console.log("logged sucessfull...");
+        this.userInfo = {
+          id: 1,
+          userName: "Pinco Pallo (Google)",
+          email: "google acc email",
+          dataNascita: "google nato ieri",
+          picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
+          musicista: true,
+          propLoc: false,
+          fornStrum: false
+        };
+      }
+    });
   }
 
   oauthPasswordFlowConfig() {
     this.oauthService.configure(authPasswordFlowConfig);
     this.oauthService.setupAutomaticSilentRefresh();
     this.oauthService.loadDiscoveryDocument();
-  }
-
-  get email() {
-    return (this.oauthService.getIdentityClaims() as any)['email']
-  }
-
-  get picture() {
-    return (this.oauthService.getIdentityClaims() as any)['picture']
-  }
-  
-  get name() {
-    return (this.oauthService.getIdentityClaims() as any)['name']
-  }
-
-  get locale() {
-    return (this.oauthService.getIdentityClaims() as any)['locale']
   }
 
   get accessToken() {
@@ -99,7 +117,18 @@ export class AuthService {
         password
       )
       .then(() => {
-        console.debug('successfully logged in');
+        // chiamare endpoint /api/get_user_info
+        console.log("logged sucessfull...");
+        this.userInfo = {
+          id: 1,
+          userName: "Pinco Pallo (Personal)",
+          email: "personal acc email",
+          dataNascita: "personal nato ieri",
+          picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
+          musicista: false,
+          propLoc: true,
+          fornStrum: true
+        };
         this.router.navigate([this.redirectUrl]);
       })
       .catch(() => {

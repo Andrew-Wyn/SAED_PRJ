@@ -27,10 +27,10 @@
                 </div>
             </td>
             <td>
-                {{authService.name}}
+                {{authService.userInfo?.userName}}
             </td>
             <td>
-                <div *ngIf="authService.picture; else noPicture"><img class="logo-usr" [src]="authService.picture"/></div>
+                <div *ngIf="authService.userInfo?.picture; else noPicture"><img class="logo-usr" [src]="authService.userInfo?.picture"/></div>
                 <ng-template #noPicture><img class="logo-usr" src="https://icon-library.com/images/no-user-image-icon/no-user-image-icon-23.jpg"/></ng-template>
             </td>
         </tr>
