@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, of, interval, from } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, repeatWhen, tap } from 'rxjs/operators';
+import { catchError, repeatWhen, retryWhen, tap } from 'rxjs/operators';
 
 
 import { AuthService } from '../auth.service'
@@ -33,7 +33,7 @@ export class HeaderComponent implements OnInit {
   }
 
   private notificationsUrl = 'api/notify';
-  notifications$: Observable<Notify[]> = of([]);
+  notifications$: Notify[] = [];
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
@@ -42,18 +42,24 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.notifications$ = this.getNotify(this.userInfoService.userInfo?.email);
+    this.userInfoService.retriveUserInfo(this.authService.email).subscribe(
+      userInfo => {
+        this.getNotify(userInfo.id)
+      }
+    );
   }
 
-  getNotify(uid: any): Observable<Notify[]> {
-    /*const url = `${this.notificationsUrl}/${uid}`;
-    return this.http.get<Notify[]>(url)
+  getNotify(uid?: number) {
+    const url = `${this.notificationsUrl}/${uid}`;
+    /*this.http.get<Notify[]>(url)
     .pipe(
       tap(_ => console.log('fetched notify')),
-      repeatWhen(() => interval(5000)),
-      catchError(this.handleError<Notify[]>('geNotify', []))
+      repeatWhen(() => interval(1000)),
+      catchError(this.handleError<Notify[]>('getNotify', []))
+    ).subscribe(
+      notifications => {this.notifications$ = notifications}
     );*/
-    return of([
+    of([
       {
         id: 1,
         type: "a",
@@ -66,7 +72,11 @@ export class HeaderComponent implements OnInit {
       }
     ]).pipe(
       tap(_ => console.log('fetched notify')),
-      repeatWhen(() => interval(5000)), // repeat the notify api call every tot seconds
+      repeatWhen(() => interval(1000)), // repeat the notify api call every tot seconds
+    ).subscribe(
+      notifications => {
+        this.notifications$ = notifications
+      }
     );
   }
 

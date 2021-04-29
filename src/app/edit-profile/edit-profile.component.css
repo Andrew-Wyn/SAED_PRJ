@@ -1,0 +1,19 @@
+.edit-profile-form {
+    text-align: center;
+}
+
+div {
+    margin: 10px;
+}
+
+button {
+    background-color: #aaf;
+    border: 0px;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px;
+}
+
+button:hover {
+    cursor: pointer;
+}

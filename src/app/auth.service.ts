@@ -32,8 +32,8 @@ export class AuthService {
 
     if (this.hasValidAccessToken) {
       // chiamare endpoint /api/get_user_info
-      // mettere un cockie di sessione per user info o richiamare ?
-      this.userInfoService.getUserInfo(this.email);
+      // mettere un cockie di sessione per user info o richiamare ? 
+      this.userInfoService.setUserInfo(this.email);
     }
   }
 
@@ -67,7 +67,7 @@ export class AuthService {
       onTokenReceived: context => {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
-        this.userInfoService.getUserInfo(this.email);
+        this.userInfoService.setUserInfo(this.email);
       }
     });
   }
@@ -105,7 +105,7 @@ export class AuthService {
       .then(() => {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
-        this.userInfoService.getUserInfo(this.email);
+        this.userInfoService.setUserInfo(this.email);
         this.router.navigate([this.redirectUrl]);
       })
       .catch(() => {

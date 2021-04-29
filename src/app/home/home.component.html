@@ -1,4 +1,4 @@
-<div class="home">
+<div *ngIf="userInfoService.userInfo; else loading" class="home">
     <h1>Welcome Back</h1>
     <div *ngIf="userInfoService.userInfo?.picture; else noPicture"><img class="logo-usr" [src]="userInfoService.userInfo?.picture"/></div>
     <ng-template #noPicture><img class="logo-usr" src="https://icon-library.com/images/no-user-image-icon/no-user-image-icon-23.jpg"/></ng-template>
@@ -13,3 +13,4 @@
     <h3 *ngIf="userInfoService.userInfo?.propLoc">Account Proprietario Locale</h3>
     <h3 *ngIf="userInfoService.userInfo?.fornStrum">Account Fornitore Strumenti</h3>
 </div>
+<ng-template #loading>Loading ...</ng-template>

@@ -37,8 +37,7 @@ export class UserInfoService {
     };
   }
 
-
-  getUserInfo(email: string): void {
+  setUserInfo(email?: string): void {
     /* var typeAuth = sessionStorage.getItem('oauthType');
     this.http.get<UserInfo>(`${this.url}/get_user_info/${email}?type=${typeAuth}`)
     .pipe(
@@ -56,16 +55,45 @@ export class UserInfoService {
       fornStrum: false
     }).subscribe(userInfo => {
       
-      setTimeout( () => { console.log("a"); this.userInfo = userInfo; console.log("b")
-    }, 1000 );
+      setTimeout( () => { this.userInfo = userInfo;}, 500 );
       
     });
   }
 
-  changeUserinfo(userInfo: UserInfo): Observable<UserInfo> {
-    return this.http.post<UserInfo>(`${this.url}/update_user_info`, userInfo, this.httpOptions).pipe(
-      tap((userInfoUpdated: UserInfo) => console.log(`added hero w/ id=${userInfoUpdated.id}`)),
-      catchError(this.handleError<UserInfo>('addHero'))
+
+
+  retriveUserInfo(email?: string): Observable<UserInfo> {
+    /* var typeAuth = sessionStorage.getItem('oauthType');
+    this.http.get<UserInfo>(`${this.url}/get_user_info/${email}?type=${typeAuth}`)
+    .pipe(
+      tap(_ => console.log('fetched heroes')),
+      catchError(this.handleError<UserInfo>('getHeroes'))
+    ).subscribe(userInfo => this.userInfo = userInfo); */
+    return of({
+      id: 1,
+      userName: "Pinco Pallo (Google)",
+      email: "google acc email",
+      dataNascita: "google nato ieri",
+      picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
+      musicista: true,
+      propLoc: false,
+      fornStrum: false
+    });
+  }
+
+  changeUserinfo(userInfo?: UserInfo): Observable<UserInfo> {
+    return this.http.patch<UserInfo>(`${this.url}/update_user_info`, userInfo, this.httpOptions).pipe(
+      tap((userInfoUpdated: UserInfo) => console.log(`changed user: w/ id=${userInfoUpdated.id}`)),
+      catchError(this.handleError<UserInfo>('changeUserInfo', this.userInfo))
+    );
+  }
+
+  deleteUser(email?: string): Observable<UserInfo> {
+    var typeAuth = sessionStorage.getItem('oauthType');
+    return this.http.delete<UserInfo>(`${this.url}/get_user_info/${email}?type=${typeAuth}`)
+    .pipe(
+      tap(_ => console.log('deleted user')),
+      catchError(this.handleError<UserInfo>('deleteUserInfo'))
     );
   }
 }

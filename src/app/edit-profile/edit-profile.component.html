@@ -1,4 +1,31 @@
-<div>
-    <label for="hero-name">Hero name: </label>
-    <input id="hero-name" [(ngModel)]="hero.name" placeholder="name">
+<div class="edit-profile-form" *ngIf="userInfo; else loading">
+    <div>
+        <label for="user-name">User Name: </label>
+        <input id="user-name" [(ngModel)]="userInfo.userName" placeholder="User Name">
+    </div>
+    <div>
+        <label for="email">Email: </label>
+        <input id="email" [(ngModel)]="userInfo.email" placeholder="Email">
+    </div>
+    <div>
+        <label for="data-nascita">Data Nascita: </label>
+        <input id="data-nascita" [(ngModel)]="userInfo.dataNascita" placeholder="Data Nascita">
+    </div>
+    <div>
+        <label for="musicista">Musicista: </label>
+        <input type="checkbox" id="musicista" [(ngModel)]="userInfo.musicista" [ngModelOptions]="{standalone: true}">
+    </div>
+    <div>
+        <label for="propLoc">Musicista: </label>
+        <input type="checkbox" id="propLoc" [(ngModel)]="userInfo.propLoc" [ngModelOptions]="{standalone: true}">
+    </div>
+    <div>
+        <label for="fornStrum">Musicista: </label>
+        <input type="checkbox" id="fornStrum" [(ngModel)]="userInfo.fornStrum" [ngModelOptions]="{standalone: true}">
+    </div>
+    <button (click)="goBack()">go back</button>
+    <button (click)="save()">save</button>
+    <button (click)="delete()">delete</button>
+
 </div>
+<ng-template #loading>loading...</ng-template>
