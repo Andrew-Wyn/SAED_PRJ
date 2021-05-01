@@ -10,6 +10,7 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 import { MainAppComponent } from './main-app/main-app.component';
 import { HomeComponent } from './home/home.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
+import { MarketBoardComponent } from './market/market-board/market-board.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'app', pathMatch: 'full' },
@@ -23,6 +24,10 @@ const routes: Routes = [
       {
         path: 'editProfile',
         component: EditProfileComponent,
+      },
+      {
+        path: 'market',
+        component: MarketBoardComponent,
       }
     ]
   },

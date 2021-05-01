@@ -72,7 +72,7 @@ export class HeaderComponent implements OnInit {
       }
     ]).pipe(
       tap(_ => console.log('fetched notify')),
-      repeatWhen(() => interval(1000)), // repeat the notify api call every tot seconds
+      repeatWhen(() => interval(5000)), // repeat the notify api call every tot seconds
     ).subscribe(
       notifications => {
         this.notifications$ = notifications

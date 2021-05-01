@@ -1,0 +1,34 @@
+<div class="search-bar">
+    <form [formGroup]="adSearchOpt" (ngSubmit)="search()">
+        <div>
+            <label for="title">Title: </label>
+            <input id="title" formControlName="title" placeholder="title ...">
+            <label for="minprice">Prezzo Minimo: </label>
+            <input type="number" id="minprice" formControlName="minPrice" >
+            <label for="maxprice">Prezzo Massimo: </label>
+            <input type="number" id="maxprice" formControlName="maxPrice" >
+            <label for="owner">Proprietario: </label>
+            <input id="owner" formControlName="owner" placeholder="owner ...">
+            <label for="type">Tipo: </label>
+            <input id="type" formControlName="type" placeholder="type ...">
+        </div>
+        <button>search</button>
+    </form>
+</div>
+<div class="objects-list">
+    <div *ngFor="let ad of ads$ | async" >
+        {{ad.id}}
+        {{ad.photo}}
+        {{ad.title}}
+        {{ad.price}}
+        {{ad.owner}}
+        {{ad.type}}
+        <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true">
+            <a routerLink="/app/market_modify"><button>Modifica Annuncio</button></a>
+        </div>
+    </div>
+</div>
+<div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true">
+    <a routerLink="/app/market_publish"><button>Pubblica Annuncio</button></a>
+</div>
+

@@ -52,7 +52,7 @@ export class UserInfoService {
       picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
       musicista: true,
       propLoc: false,
-      fornStrum: false
+      fornStrum: true
     }).subscribe(userInfo => {
       
       setTimeout( () => { this.userInfo = userInfo;}, 500 );

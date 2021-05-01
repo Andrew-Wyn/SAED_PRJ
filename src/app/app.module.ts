@@ -14,6 +14,8 @@ import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { HomeComponent } from './home/home.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
+import { MarketModule } from './market/market.module';
+
 
 @NgModule({
   declarations: [
@@ -38,6 +40,7 @@ import { EditProfileComponent } from './edit-profile/edit-profile.component';
           sendAccessToken: true
       }
     }),    // The HttpClientInMemoryWebApiModule module intercepts HTTP requests
+    MarketModule
   ],
   providers: [],
   bootstrap: [AppComponent]
