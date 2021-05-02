@@ -4,6 +4,8 @@ import { Location } from '@angular/common';
 
 import { UserInfo } from '../userInfo'
 import { timeout } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-edit-profile',
@@ -14,7 +16,7 @@ export class EditProfileComponent implements OnInit {
 
   @Input() userInfo?: UserInfo;
 
-  constructor(public userInfoService: UserInfoService, private location: Location, private cd: ChangeDetectorRef) { }
+  constructor(public userInfoService: UserInfoService, private location: Location, private cd: ChangeDetectorRef, private router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.getUserInfo();
@@ -61,7 +63,10 @@ export class EditProfileComponent implements OnInit {
   }  
 
   delete() {
-    this.userInfoService.deleteUser(this.userInfo?.email).subscribe(() => this.goBack());
+    this.userInfoService.deleteUser(this.userInfo?.email).subscribe(() => {
+      this.authService.logout();
+      this.router.navigate(['/login']);
+    });
   }
 
 }

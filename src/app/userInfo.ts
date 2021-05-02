@@ -3,7 +3,7 @@ export interface UserInfo {
     userName: string;
     email: string;
     dataNascita: string;
-    picture: string | ArrayBuffer | null; // inizialmente utilizzare url da modificare con blob
+    picture: string | ArrayBuffer | null;
     musicista: Boolean;
     propLoc: Boolean;
     fornStrum: Boolean;

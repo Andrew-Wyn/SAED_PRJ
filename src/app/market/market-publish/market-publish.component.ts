@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { FormGroup, FormControl } from '@angular/forms';
 import { Location } from '@angular/common';
@@ -15,6 +15,8 @@ import { UserInfoService } from 'src/app/user-info.service';
 })
 export class MarketPublishComponent implements OnInit {
 
+  photo?: string | ArrayBuffer | null;
+
   adNewForm = new FormGroup({
     title: new FormControl(undefined),
     price: new FormControl(undefined),
@@ -22,8 +24,7 @@ export class MarketPublishComponent implements OnInit {
     type: new FormControl(undefined),
   });
 
-
-  constructor(private marketService: MarketService, private location: Location, private userInfoService: UserInfoService) { }
+  constructor(private marketService: MarketService, private location: Location, private userInfoService: UserInfoService, private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
   }
@@ -38,12 +39,31 @@ export class MarketPublishComponent implements OnInit {
       id: undefined,
       title: this.adNewForm.value['title'],
       price: this.adNewForm.value['price'],
-      photo: '', // TODO: implementare upload photo
+      photo: this.photo,
       owner: this.userInfoService.userInfo?.userName,
       ownerId: this.userInfoService.userInfo?.id,
       type: this.adNewForm.value['type'],  
     } as Ad
+    console.log(newAd);
     this.marketService.addAd(newAd).subscribe();
   }
+
+  onFileChange(event: any) {
+    let reader = new FileReader();
+   
+    if(event.target.files && event.target.files.length) {
+      const [file] = event.target.files;
+      reader.readAsDataURL(file);
+    
+      reader.onload = () => {
+        this.photo = reader.result;
+        console.log(this.photo);
+        
+        // need to run CD since file load runs outside of zone
+        this.cd.markForCheck();
+      };
+    }
+  }
+  
 
 }

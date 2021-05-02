@@ -14,11 +14,11 @@
                 <label for="type"><b>Tipo: </b></label>
                 <input id="type" formControlName="type" required>
             </p>
+            <h3>Foto: </h3>
+            <div *ngIf="photo; else noPicture"><img id="picture-icon" [src]="photo"/></div>
+            <ng-template #noPicture><div><img id="picture-icon" src="https://freepikpsd.com/wp-content/uploads/2019/10/no-image-available-icon-png-8-Transparent-Images.png"/></div></ng-template>        
             <p>
-                <label for="photo"><b>Foto: </b></label><br>
-                <input type="file"
-                    id="avatar" name="photo"
-                    accept="image/png, image/jpeg">
+                <input type="file" (change)="onFileChange($event)" required/>
             </p>
 
             <button [disabled]="!adNewForm.valid" (click)="save()">Create</button>
