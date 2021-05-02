@@ -1,0 +1,16 @@
+<form [formGroup]="adModifyForm"> 
+    <div>
+        <label for="title">Title: </label>
+        <input id="title" formControlName="title">
+        <label for="price">Prezzo: </label>
+        <input type="number" id="price" formControlName="price" >
+        <label for="photo">Foto: </label>
+        <input id="photo" formControlName="photo" >
+        <label for="owner">Proprietario: </label>
+        <input id="owner" formControlName="owner">
+        <label for="type">Tipo: </label>
+        <input id="type" formControlName="type">
+    </div>
+    <button (click)="save()">modify</button>
+    <button (click)="goBack ()">go back</button>
+</form>

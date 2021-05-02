@@ -4,5 +4,6 @@ export interface Ad {
     title: string;
     price: number;
     owner: string;
+    ownerId: number;
     type: string;
 }

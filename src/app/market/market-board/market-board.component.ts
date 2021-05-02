@@ -26,14 +26,18 @@ export class MarketBoardComponent implements OnInit {
   });
 
   constructor(private marketService: MarketService, public userInfoService: UserInfoService) { }
-
   ngOnInit(): void {
+    console.log(this.userInfoService.userInfo?.id);
     this.search();
   }
 
   // Push a search term into the observable stream.
   search(): void {
     this.ads$ = this.marketService.searchAds(this.adSearchOpt.value as AdSearchOpt);
+  }
+  
+  delete(id: number): void {
+    this.marketService.deleteAd(id).subscribe();
   }
 
 }

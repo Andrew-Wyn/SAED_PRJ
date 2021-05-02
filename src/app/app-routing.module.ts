@@ -11,6 +11,8 @@ import { MainAppComponent } from './main-app/main-app.component';
 import { HomeComponent } from './home/home.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { MarketBoardComponent } from './market/market-board/market-board.component';
+import { MarketEditComponent } from './market/market-edit/market-edit.component';
+
 
 const routes: Routes = [
   { path: '', redirectTo: 'app', pathMatch: 'full' },
@@ -28,6 +30,10 @@ const routes: Routes = [
       {
         path: 'market',
         component: MarketBoardComponent,
+      },
+      {
+        path: 'marketEdit',
+        component: MarketEditComponent,
       }
     ]
   },

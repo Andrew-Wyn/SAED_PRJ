@@ -23,8 +23,9 @@
         {{ad.price}}
         {{ad.owner}}
         {{ad.type}}
-        <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true">
-            <a routerLink="/app/market_modify"><button>Modifica Annuncio</button></a>
+        <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true && userInfoService.userInfo.id == ad.ownerId">
+            <a [routerLink]="['/app/marketEdit', { adModifiy: ad  | json }]"><button>Modifica Annuncio</button></a>
+            <button (click)="delete(ad.id)">Elimina Annuncio</button>
         </div>
     </div>
 </div>
