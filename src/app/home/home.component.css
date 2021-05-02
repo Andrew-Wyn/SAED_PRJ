@@ -6,13 +6,3 @@
     border-radius: 50%;
     height: 150px;
 }
-
-button {
-    background-color: #aaf;
-    border: 0px;
-    padding: 10px;
-    border-radius: 5px;
-}
-button:hover {
-    cursor: pointer;
-}

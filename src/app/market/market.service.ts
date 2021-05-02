@@ -75,7 +75,7 @@ export class MarketService {
   }
 
   /** DELETE: delete the hero from the server */
-  deleteAd(id: number): Observable<Ad> {
+  deleteAd(id?: number): Observable<Ad> {
     const url = `${this.marketUrl}/${id}`;
 
     return this.http.delete<Ad>(url, this.httpOptions).pipe(
@@ -95,7 +95,7 @@ export class MarketService {
     );*/
     return of([{
       id: 1,
-      photo: "photo1",
+      photo: undefined,
       title: "titolo1",
       price: 11,
       owner: "possessore 1",
@@ -103,7 +103,7 @@ export class MarketService {
       type: "tipoA",
     } as Ad,{
       id: 2,
-      photo: "photo2",
+      photo: undefined,
       title: "titolo2",
       price: 22,
       owner: "possessore 2",

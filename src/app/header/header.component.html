@@ -30,8 +30,10 @@
                 {{userInfoService.userInfo?.userName}}
             </td>
             <td>
-                <div *ngIf="userInfoService.userInfo?.picture; else noPicture"><img class="logo-usr" [src]="userInfoService.userInfo?.picture"/></div>
-                <ng-template #noPicture><img class="logo-usr" src="https://icon-library.com/images/no-user-image-icon/no-user-image-icon-23.jpg"/></ng-template>
+                <a routerLink="/app/home">
+                    <div *ngIf="userInfoService.userInfo?.picture; else noPicture"><img class="logo-usr" [src]="userInfoService.userInfo?.picture"/></div>
+                    <ng-template #noPicture><img class="logo-usr" src="https://icon-library.com/images/no-user-image-icon/no-user-image-icon-23.jpg"/></ng-template>
+                </a>
             </td>
         </tr>
 

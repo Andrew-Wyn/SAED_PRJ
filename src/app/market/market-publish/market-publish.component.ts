@@ -38,7 +38,7 @@ export class MarketPublishComponent implements OnInit {
       id: undefined,
       title: this.adNewForm.value['title'],
       price: this.adNewForm.value['price'],
-      photo: this.adNewForm.value['photo'],
+      photo: '', // TODO: implementare upload photo
       owner: this.userInfoService.userInfo?.userName,
       ownerId: this.userInfoService.userInfo?.id,
       type: this.adNewForm.value['type'],  

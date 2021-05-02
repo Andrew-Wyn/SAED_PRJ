@@ -1,36 +1,50 @@
-<div><h2>Annunci</h2></div>
+<div><h2>Ricerca Annunci</h2></div>
 <div class="search-bar">
     <form [formGroup]="adSearchOpt" (ngSubmit)="search()">
         <div>
-            <label for="title">Title: </label>
-            <input id="title" formControlName="title" placeholder="title ...">
-            <label for="minprice">Prezzo Minimo: </label>
-            <input type="number" id="minprice" formControlName="minPrice" >
-            <label for="maxprice">Prezzo Massimo: </label>
-            <input type="number" id="maxprice" formControlName="maxPrice" >
-            <label for="owner">Proprietario: </label>
-            <input id="owner" formControlName="owner" placeholder="owner ...">
-            <label for="type">Tipo: </label>
-            <input id="type" formControlName="type" placeholder="type ...">
+            <div>
+                <label for="title">Title: </label>
+                <input id="title" formControlName="title" placeholder="title ...">
+            </div>
+            <div>
+                <label for="minprice">Prezzo Minimo: </label>
+                <input type="number" id="minprice" formControlName="minPrice" >
+            </div>
+            <div>
+                <label for="maxprice">Prezzo Massimo: </label>
+                <input type="number" id="maxprice" formControlName="maxPrice" >
+            </div>
+            <div>
+                <label for="owner">Proprietario: </label>
+                <input id="owner" formControlName="owner" placeholder="owner ...">
+            </div>
+            <div>
+                <label for="type">Tipo: </label>
+                <input id="type" formControlName="type" placeholder="type ...">
+            </div>
         </div>
         <button>search</button>
     </form>
 </div>
+<hr>
 <div class="objects-list">
-    <div *ngFor="let ad of ads$ | async" >
-        {{ad.id}}
-        {{ad.photo}}
-        {{ad.title}}
-        {{ad.price}}
-        {{ad.owner}}
-        {{ad.type}}
-        <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true && userInfoService.userInfo.id == ad.ownerId">
-            <a [routerLink]="['/app/marketEdit', { adModifiy: ad  | json }]"><button>Modifica Annuncio</button></a>
-            <button (click)="delete(ad.id)">Elimina Annuncio</button>
+    <div *ngFor="let ad of ads$ | async">
+        <div class="card">
+            <div><h2>{{ad.title}}</h2></div>
+                <div *ngIf="ad.photo != undefined; else noPicture"><img class="photo" [src]="ad.photo"/></div>
+                <ng-template #noPicture><div><img class="photo" src="https://freepikpsd.com/wp-content/uploads/2019/10/no-image-available-icon-png-8-Transparent-Images.png"/></div></ng-template>
+            <p><b>Prezzo:</b>&nbsp;{{ad.price}} &euro;</p>
+            <p><b>Proprietario:</b>&nbsp;{{ad.owner}}</p>
+            <p><b>Tipo:</b>&nbsp;{{ad.type}}</p>
+            <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true && userInfoService.userInfo.id == ad.ownerId">
+                <a [routerLink]="['/app/marketEdit', { adModifiy: ad  | json }]"><button>Modifica Annuncio</button></a>
+                &nbsp;
+                <button (click)="delete(ad.id)">Elimina Annuncio</button>
+            </div>
         </div>
     </div>
 </div>
 <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true">
-    <a routerLink="/app/marketPublish"><button>Pubblica Annuncio</button></a>
+    <a routerLink="/app/marketPublish"><button class="btn-publish">Pubblica Annuncio</button></a>
 </div>
 
