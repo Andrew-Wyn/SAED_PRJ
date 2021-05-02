@@ -1,5 +1,11 @@
 <div class="edit-profile-form" *ngIf="userInfo; else loading">
     <div>
+        <h3>Immagine profilo:</h3>
+        <div *ngIf="userInfo.picture; else noPicture"><img id="picture-icon" [src]="userInfo.picture"></div>
+        <ng-template #noPicture><div><img id="picture-icon" src="https://icon-library.com/images/no-user-image-icon/no-user-image-icon-23.jpg"/></div></ng-template>
+        <input type="file" (change)="onFileChange($event)" />
+    </div>
+    <div>
         <label for="user-name">User Name: </label>
         <input id="user-name" [(ngModel)]="userInfo.userName" placeholder="User Name">
     </div>

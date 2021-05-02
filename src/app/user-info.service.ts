@@ -82,6 +82,7 @@ export class UserInfoService {
   }
 
   changeUserinfo(userInfo?: UserInfo): Observable<UserInfo> {
+    console.log(userInfo);
     return this.http.patch<UserInfo>(`${this.url}/update_user_info`, userInfo, this.httpOptions).pipe(
       tap((userInfoUpdated: UserInfo) => console.log(`changed user: w/ id=${userInfoUpdated.id}`)),
       catchError(this.handleError<UserInfo>('changeUserInfo', this.userInfo))

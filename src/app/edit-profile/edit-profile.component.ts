@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { UserInfoService } from '../user-info.service';
 import { Location } from '@angular/common';
 
@@ -14,7 +14,7 @@ export class EditProfileComponent implements OnInit {
 
   @Input() userInfo?: UserInfo;
 
-  constructor(public userInfoService: UserInfoService, private location: Location) { }
+  constructor(public userInfoService: UserInfoService, private location: Location, private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.getUserInfo();
@@ -28,6 +28,25 @@ export class EditProfileComponent implements OnInit {
       }, 500);
     });
   }
+
+  onFileChange(event: any) {
+    let reader = new FileReader();
+   
+    if(event.target.files && event.target.files.length) {
+      const [file] = event.target.files;
+      reader.readAsDataURL(file);
+    
+      reader.onload = () => {
+        if (this.userInfo != undefined){
+          console.log(reader.result);
+          this.userInfo.picture = reader.result;
+        }
+        // need to run CD since file load runs outside of zone
+        this.cd.markForCheck();
+      };
+    }
+  }
+  
 
   goBack(): void {
     this.location.back();
