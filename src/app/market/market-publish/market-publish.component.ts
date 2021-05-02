@@ -44,6 +44,7 @@ export class MarketPublishComponent implements OnInit {
       ownerId: this.userInfoService.userInfo?.id,
       type: this.adNewForm.value['type'],  
     } as Ad
+    console.log(newAd);
     this.marketService.addAd(newAd).subscribe();
   }
 

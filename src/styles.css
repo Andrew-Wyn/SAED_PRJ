@@ -13,3 +13,18 @@ button {
 button:hover {
     cursor: pointer;
 }
+
+input[type="text"] {
+    padding: 10px 10px 10px 5px;
+    font-size: 18px;
+    width: 280px;
+    border:  1px solid ;
+    border-color: transparent transparent gray;
+    background-color: transparent; 
+}
+
+input[type="text"]:focus{outline: none;}
+
+input[type="number"] {
+    width: 50px;
+}

@@ -4,15 +4,15 @@
         <div class="publish-form">
             <p>
                 <label for="title"><b>Title: </b></label>
-                <input id="title" formControlName="title" required>
+                <input type="text" id="title" formControlName="title" required>
             </p>
             <p>
                 <label for="price"><b>Prezzo: </b></label>
-                <input type="number" id="price" formControlName="price" required>
+                <input type="text" id="price" formControlName="price" required>
             </p>
             <p>
                 <label for="type"><b>Tipo: </b></label>
-                <input id="type" formControlName="type" required>
+                <input type="text" id="type" formControlName="type" required>
             </p>
             <h3>Foto: </h3>
             <div *ngIf="photo; else noPicture"><img id="picture-icon" [src]="photo"/></div>
