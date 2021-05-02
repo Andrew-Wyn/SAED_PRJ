@@ -1,5 +1,5 @@
 export interface Ad {
-    id: number;
+    id?: number;
     photo: string;
     title: string;
     price: number;

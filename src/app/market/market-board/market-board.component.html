@@ -1,3 +1,4 @@
+<div><h2>Annunci</h2></div>
 <div class="search-bar">
     <form [formGroup]="adSearchOpt" (ngSubmit)="search()">
         <div>
@@ -30,6 +31,6 @@
     </div>
 </div>
 <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true">
-    <a routerLink="/app/market_publish"><button>Pubblica Annuncio</button></a>
+    <a routerLink="/app/marketPublish"><button>Pubblica Annuncio</button></a>
 </div>
 

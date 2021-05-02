@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MaketPublishComponent } from './maket-publish.component';
+import { MarketPublishComponent } from './market-publish.component';
 
-describe('MaketPublishComponent', () => {
-  let component: MaketPublishComponent;
-  let fixture: ComponentFixture<MaketPublishComponent>;
+describe('MarketPublishComponent', () => {
+  let component: MarketPublishComponent;
+  let fixture: ComponentFixture<MarketPublishComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MaketPublishComponent ]
+      declarations: [ MarketPublishComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(MaketPublishComponent);
+    fixture = TestBed.createComponent(MarketPublishComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

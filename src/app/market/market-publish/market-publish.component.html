@@ -1,0 +1,15 @@
+<div><h2>Creare Nuovo Annuncio</h2></div>
+<form [formGroup]="adNewForm"> 
+    <div>
+        <label for="title">Title: </label>
+        <input id="title" formControlName="title" required>
+        <label for="price">Prezzo: </label>
+        <input type="number" id="price" formControlName="price" required>
+        <label for="photo">Foto: </label>
+        <input id="photo" formControlName="photo" required>
+        <label for="type">Tipo: </label>
+        <input id="type" formControlName="type" required>
+    </div>
+    <button [disabled]="!adNewForm.valid" (click)="save()">Create</button>
+    <button (click)="goBack()">go back</button>
+</form>

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuard } from './auth.guard'
+import { MarketpublishGuard } from './market/marketpublish.guard'
 import { LoginGuard } from './login.guard'
 
 import { LoginComponent } from './login/login.component'
@@ -12,7 +13,7 @@ import { HomeComponent } from './home/home.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { MarketBoardComponent } from './market/market-board/market-board.component';
 import { MarketEditComponent } from './market/market-edit/market-edit.component';
-
+import { MarketPublishComponent } from './market/market-publish/market-publish.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'app', pathMatch: 'full' },
@@ -34,6 +35,10 @@ const routes: Routes = [
       {
         path: 'marketEdit',
         component: MarketEditComponent,
+      },
+      {
+        path: 'marketPublish',
+        component: MarketPublishComponent, canActivate: [MarketpublishGuard]
       }
     ]
   },
