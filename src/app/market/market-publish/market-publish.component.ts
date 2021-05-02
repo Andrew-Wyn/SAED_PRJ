@@ -44,7 +44,6 @@ export class MarketPublishComponent implements OnInit {
       ownerId: this.userInfoService.userInfo?.id,
       type: this.adNewForm.value['type'],  
     } as Ad
-    console.log(newAd);
     this.marketService.addAd(newAd).subscribe();
   }
 
@@ -57,7 +56,6 @@ export class MarketPublishComponent implements OnInit {
     
       reader.onload = () => {
         this.photo = reader.result;
-        console.log(this.photo);
         
         // need to run CD since file load runs outside of zone
         this.cd.markForCheck();

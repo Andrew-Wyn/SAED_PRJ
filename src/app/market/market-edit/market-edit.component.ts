@@ -36,7 +36,6 @@ export class MarketEditComponent implements OnInit {
         this.location.back();
       } else {
         // to delete
-        console.log(this.adModify?.id);
         this.adModifyForm.patchValue({
           title: this.adModify?.title,
           price: this.adModify?.price,
@@ -71,7 +70,6 @@ export class MarketEditComponent implements OnInit {
   }
 
   save(): void {
-    console.log(this.adModifyForm.value);
     this.marketService.updateAd(this.adModifyForm.value).subscribe(() => {
       this.goBack();
     });
