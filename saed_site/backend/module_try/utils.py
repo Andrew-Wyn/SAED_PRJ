@@ -1,2 +1,0 @@
-def prova():
-    return "miao"

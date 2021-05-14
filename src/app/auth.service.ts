@@ -30,16 +30,16 @@ export class AuthService {
     // this.userName = "max";
     // this.password = "geheim";
 
-    if (this.hasValidAccessToken) {
+//    if (this.hasValidAccessToken) {
       // chiamare endpoint /api/get_user_info
-      // mettere un cockie di sessione per user info o richiamare ? 
-      this.userInfoService.setUserInfo(this.email);
-    }
+      // mettere un cockie di sessione per user info o richiamare ?
+//      this.userInfoService.setUserInfo(this.email);
+//    }
   }
 
   initConfig() {
     if (sessionStorage.getItem('oauthType') == 'google') {
-      
+
       this.oauthGoogleConfig();
       /*
         controllo per evitare di configurare google qual'ora
@@ -48,7 +48,7 @@ export class AuthService {
         e settare la configurazione di login personale, se invece abbiamo anche un
         token allora in tal caso significa che siamo nel flusso di google e dobbiamo
         lasciare caricata la configurazione di google.
-        Per vedere se il token google è valido dobbiamo prima caricare la configurazione relativa. 
+        Per vedere se il token google è valido dobbiamo prima caricare la configurazione relativa.
       */
       if (this.oauthService.hasValidAccessToken()) {
         console.log("google");

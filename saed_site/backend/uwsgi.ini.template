@@ -1,6 +1,6 @@
 [uwsgi]
 uid = {uid}
 gid = {gid}
-module = main
+module = app
 callable = app
 

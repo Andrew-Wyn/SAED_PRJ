@@ -1,0 +1,1 @@
+CREATE TABLE users (id INTEGER PRIMARY KEY, account_type TINYINT NOT NULL, email TEXT NOT NULL, name TEXT NOT NULL, given_name TEXT, family_name TEXT, picture_url TEXT, UNIQUE (account_type, email) ON CONFLICT ROLLBACK);
