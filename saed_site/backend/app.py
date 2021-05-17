@@ -20,7 +20,7 @@ db_lock = Lock()
 API_PATH = "/saed/api"
 
 with open("oauth_data") as f:
-    google_client_id, google_client_secret = map(str.strip, f.readline().split())
+    google_client_id, google_client_secret = map(str.strip, f.readline().split(":"))
     google_scopes = [l.strip() for l in f]
 
 AccountType = IntEnum("AccountType", "GOOGLE") #FACEBOOK...
