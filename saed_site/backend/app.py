@@ -3,6 +3,7 @@ import sqlite3
 from enum import IntEnum
 from threading import Lock
 from functools import wraps
+from flask_cors import CORS
 
 import flask
 from flask import Flask, request, session
@@ -13,6 +14,7 @@ from google.auth.exceptions import RefreshError
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+CORS(app)
 
 db = sqlite3.connect("db.sqlite3", check_same_thread=False)
 db_lock = Lock()
@@ -78,13 +80,13 @@ def configure_session():
     except RefreshError:
         return api_error(401, "Token scaduto")
 
-    user_id = ensure_user_exists(
+    """user_id = ensure_user_exists(
             AccountType.GOOGLE,
             userinfo["email"],
             userinfo["name"],
             userinfo["given_name"],
             userinfo["family_name"],
             userinfo["picture"])
-
-    session["user_id"] = user_id
+    """
+    session["user_id"] = "prova"
     return {}
