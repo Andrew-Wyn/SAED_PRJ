@@ -4,6 +4,7 @@ import {
 } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
+import * as GLOBALCONFIG from './global-config'
 
 /** Inject With Credentials into the request */
 @Injectable()
@@ -11,12 +12,12 @@ export class HttpRequestInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler):
     Observable<HttpEvent<any>> {
-
-    console.log("interceptor: " + req.url.split('/')[2]);
-    if (req.url.split('/')[2] == "localhost:8080") {
-        req = req.clone({
-            withCredentials: true,
-        });
+    let intercepted = req.url.split('/').slice(0, 4).join('/')
+    console.log("interceptor: " + intercepted);
+    if (intercepted == GLOBALCONFIG.backEndLocation) {
+      req = req.clone({
+          withCredentials: true,
+      });
     }
 
       return next.handle(req);

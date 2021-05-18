@@ -10,7 +10,7 @@ import { authPasswordFlowConfig } from './auth-password-flow.config'
 import { googleAuthConfig } from './auth-google.config'
 import { UserInfoService } from './user-info.service'
 
-import { UserInfo } from './userInfo'
+import * as GLOBALCONFIG from './global-config'
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +23,7 @@ export class AuthService {
   userName?: string;
   password?: string;
 
-  private urlConfigureSession = 'api/configure_session';  // URL to web api
+  private urlConfigureSession = '/api/configure_session';  // URL to web api
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json'}),
   };
@@ -60,7 +60,7 @@ export class AuthService {
   }
 
   private configureSession() {
-    this.http.post<any>(`http://localhost:8080/saed/${this.urlConfigureSession}`, {auth_token:this.oauthService.getAccessToken()} as any, this.httpOptions)
+    this.http.post<any>(`${GLOBALCONFIG.backEndLocation + this.urlConfigureSession}`, {auth_token:this.oauthService.getAccessToken()} as any, this.httpOptions)
     .pipe(
       tap(_ => console.log('configured session')),
       catchError(this.handleError<any>('configureSession'))
