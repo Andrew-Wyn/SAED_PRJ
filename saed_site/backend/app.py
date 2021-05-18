@@ -4,6 +4,7 @@ from enum import IntEnum
 from threading import Lock
 from functools import wraps
 from flask_cors import CORS
+from flask_session import Session
 
 import flask
 from flask import Flask, request, session
@@ -14,7 +15,9 @@ from google.auth.exceptions import RefreshError
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-CORS(app)
+app.config['SESSION_TYPE'] = 'filesystem'
+CORS(app, supports_credentials=True)
+Session(app)
 
 db = sqlite3.connect("db.sqlite3", check_same_thread=False)
 db_lock = Lock()
@@ -89,4 +92,5 @@ def configure_session():
             userinfo["picture"])
     """
     session["user_id"] = "prova"
+
     return {}
