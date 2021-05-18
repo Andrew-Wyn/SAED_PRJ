@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, map, tap, timeout } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 
 import { UserInfo } from './userInfo';
 
@@ -18,7 +18,7 @@ export class UserInfoService {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };  
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   /**
    * Handle Http operation that failed.
