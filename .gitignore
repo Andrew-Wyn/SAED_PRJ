@@ -49,5 +49,7 @@ Thumbs.db
 __pycache__/
 saed_site/frontend/
 saed_site/backend/uwsgi.ini
+saed_site/backend/flask_session
+saed_site/backend/db.sqlite3
 
 oauth_data
