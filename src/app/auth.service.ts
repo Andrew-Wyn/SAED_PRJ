@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable, of } from 'rxjs';
 
 import { OAuthService, NullValidationHandler } from 'angular-oauth2-oidc'
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, tap } from 'rxjs/operators';
 
 import { authPasswordFlowConfig } from './auth-password-flow.config'
 import { googleAuthConfig } from './auth-google.config'
@@ -20,23 +23,50 @@ export class AuthService {
   userName?: string;
   password?: string;
 
+  private urlConfigureSession = 'api/configure_session';  // URL to web api
+  httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json'}),
+  };
+
+  /**
+   * Handle Http operation that failed.
+   * Let the app continue.
+   * @param operation - name of the operation that failed
+   * @param result - optional value to return as the observable result
+   */
+   private handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+
+      // TODO: send the error to remote logging infrastructure
+      console.error(error); // log to console instead
+
+      // Let the app keep running by returning an empty result.
+      return of(result as T);
+    };
+  }
+
   constructor (
     private router: Router,
     private oauthService: OAuthService,
-    private userInfoService: UserInfoService
+    private userInfoService: UserInfoService,
+    private http: HttpClient
   ) {
     this.redirectUrl = "";
-
-    // this.userName = "max";
-    // this.password = "geheim";
-
-//    if (this.hasValidAccessToken) {
+    if (this.hasValidAccessToken) {
       // chiamare endpoint /api/get_user_info
       // mettere un cockie di sessione per user info o richiamare ?
-//      this.userInfoService.setUserInfo(this.email);
-//    }
+      this.userInfoService.setUserInfo(this.email);
+    }
   }
 
+  private configureSession() {
+    this.http.post<any>(`http://localhost:8080/saed/${this.urlConfigureSession}`, {auth_token:this.oauthService.getAccessToken()} as any, this.httpOptions)
+    .pipe(
+      tap(_ => console.log('configured session')),
+      catchError(this.handleError<any>('configureSession'))
+    ).subscribe();
+  }
+  
   initConfig() {
     if (sessionStorage.getItem('oauthType') == 'google') {
 
@@ -52,6 +82,7 @@ export class AuthService {
       */
       if (this.oauthService.hasValidAccessToken()) {
         console.log("google");
+        this.configureSession();
         return;
       }
       sessionStorage.removeItem('oauthType');
@@ -67,6 +98,7 @@ export class AuthService {
       onTokenReceived: context => {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
+        this.configureSession();
         this.userInfoService.setUserInfo(this.email);
       }
     });
@@ -105,6 +137,7 @@ export class AuthService {
       .then(() => {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
+        this.configureSession();
         this.userInfoService.setUserInfo(this.email);
         this.router.navigate([this.redirectUrl]);
       })
