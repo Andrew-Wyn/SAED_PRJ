@@ -3,15 +3,17 @@ import sqlite3
 from enum import IntEnum
 from threading import Lock
 from functools import wraps
-from flask_cors import CORS
-from flask_session import Session
+from contextlib import closing
 
 import flask
 from flask import Flask, request, session
+from flask_cors import CORS
+from flask_session import Session
 
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from google.auth.exceptions import RefreshError
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -19,10 +21,8 @@ app.config['SESSION_TYPE'] = 'filesystem'
 CORS(app, supports_credentials=True)
 Session(app)
 
-db = sqlite3.connect("db.sqlite3", check_same_thread=False)
-db_lock = Lock()
-
 API_PATH = "/saed/api"
+MAIN_DB = "db.sqlite3"
 
 with open("oauth_data") as f:
     google_client_id, google_client_secret = map(str.strip, f.readline().split(":"))
@@ -31,22 +31,33 @@ with open("oauth_data") as f:
 AccountType = IntEnum("AccountType", "GOOGLE") #FACEBOOK...
 
 
-def with_lock(lock):
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            with lock:
-                return f(*args, **kwargs)
-        return wrapper
-    return decorator
-
-
 def api_error(code, msg):
     return {"error": msg}, code
 
 
-@with_lock(db_lock)
-def get_user_id(account_type, email):
+def connect(arg_name, db_path):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            conn = sqlite3.connect(db_path)
+            kwargs[arg_name] = conn
+            with closing(conn):
+                with conn:
+                    return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def with_session(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if "id" not in session:
+            return api_error(401, "Unauthorized")
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def get_user_id(db, account_type, email):
     cur = db.cursor()
     cur.execute("SELECT id FROM users WHERE account_type = ? AND email = ?", (account_type, email))
     record = cur.fetchone()
@@ -55,21 +66,19 @@ def get_user_id(account_type, email):
     return record[0]
 
 
-def ensure_user_exists(account_type, email, name, given_name=None, family_name=None, picture_url=None):
+def ensure_user_exists(db, account_type, email, name, given_name=None, family_name=None, picture_url=None):
     try:
-        user_id = get_user_id(account_type, email)
+        return get_user_id(db, account_type, email)
     except KeyError:
-        with db_lock:
-            cur = db.cursor()
-            cur.execute("INSERT INTO users(account_type, email, name, given_name, family_name, picture_url) VALUES (?, ?, ?, ?, ?, ?)",
-                    (account_type, email, name, given_name, family_name, picture_url))
-            db.commit()
-        user_id = get_user_id(account_type, email)
-    return user_id
+        cur = db.cursor()
+        cur.execute("INSERT INTO users(account_type, email, name, given_name, family_name, picture_url) VALUES (?, ?, ?, ?, ?, ?)",
+                (account_type, email, name, given_name, family_name, picture_url))
+        return get_user_id(db, account_type, email)
 
 
 @app.route(f"{API_PATH}/configure_session", methods=["POST"])
-def configure_session():
+@connect("db", MAIN_DB)
+def configure_session(db):
     try:
         token = request.json["auth_token"]
     except KeyError:
@@ -83,14 +92,24 @@ def configure_session():
     except RefreshError:
         return api_error(401, "Token scaduto")
 
-    """user_id = ensure_user_exists(
+    session["id"] = ensure_user_exists(
+            db,
             AccountType.GOOGLE,
             userinfo["email"],
             userinfo["name"],
             userinfo["given_name"],
             userinfo["family_name"],
             userinfo["picture"])
-    """
-    session["user_id"] = "prova"
 
     return {}
+
+
+@app.route(f"{API_PATH}/user_info")
+@with_session
+@connect("db", MAIN_DB)
+def get_user_info(db):
+    cur = db.cursor()
+    columns = ("email", "name", "given_name", "family_name", "picture_url")
+    cur.execute(f"SELECT {','.join(columns)} FROM users WHERE id = ?", (session["id"],))
+    result = cur.fetchone()
+    return dict(zip(columns, result))
