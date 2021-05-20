@@ -31,6 +31,10 @@ with open("oauth_data") as f:
 AccountType = IntEnum("AccountType", "GOOGLE") #FACEBOOK...
 
 
+def qmarks(n):
+    return ", ".join(("?",) * n)
+
+
 def api_error(code, msg):
     return {"error": msg}, code
 
@@ -71,8 +75,8 @@ def ensure_user_exists(db, account_type, email, name, given_name=None, family_na
         return get_user_id(db, account_type, email)
     except KeyError:
         cur = db.cursor()
-        cur.execute("INSERT INTO users(account_type, email, name, given_name, family_name, picture_url) VALUES (?, ?, ?, ?, ?, ?)",
-                (account_type, email, name, given_name, family_name, picture_url))
+        cur.execute(f"INSERT INTO users(account_type, email, name, given_name, family_name, picture_url, musician, instrument_supplier, club_owner) VALUES ({qmarks(9)})",
+                (account_type, email, name, given_name, family_name, picture_url, False, False, False))
         return get_user_id(db, account_type, email)
 
 
@@ -109,7 +113,7 @@ def configure_session(db):
 @connect("db", MAIN_DB)
 def get_user_info(db):
     cur = db.cursor()
-    columns = ("email", "name", "given_name", "family_name", "picture_url")
+    columns = ("email", "name", "given_name", "family_name", "picture_url", "musician", "instrument_supplier", "club_owner")
     cur.execute(f"SELECT {','.join(columns)} FROM users WHERE id = ?", (session["id"],))
     result = cur.fetchone()
     return dict(zip(columns, result))
