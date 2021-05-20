@@ -1,4 +1,5 @@
 import os
+import imghdr
 import sqlite3
 from enum import IntEnum
 from threading import Lock
@@ -6,7 +7,7 @@ from functools import wraps
 from contextlib import closing
 
 import flask
-from flask import Flask, request, session
+from flask import Flask, Response, request, session
 from flask_cors import CORS
 from flask_session import Session
 
@@ -23,6 +24,17 @@ Session(app)
 
 API_PATH = "/saed/api"
 MAIN_DB = "db.sqlite3"
+IMG_DB = "img-db.sqlite3"
+SUPPORTED_IMAGE_TYPES = {
+    "png": "image/png",
+    "jpeg": "image/jpeg",
+    "gif": "image/gif",
+    "webp": "image/webp"
+}
+
+KB = 1024
+MB = KB**2
+GB = KB**3
 
 with open("oauth_data") as f:
     google_client_id, google_client_secret = map(str.strip, f.readline().split(":"))
@@ -117,3 +129,40 @@ def get_user_info(db):
     cur.execute(f"SELECT {','.join(columns)} FROM users WHERE id = ?", (session["id"],))
     result = cur.fetchone()
     return dict(zip(columns, result))
+
+
+@app.route(f"{API_PATH}/user_image")
+@with_session
+@connect("img_db", IMG_DB)
+def get_user_image(img_db):
+    cur = img_db.cursor()
+    cur.execute("SELECT image, mime FROM images WHERE user_id = ?", (session["id"],))
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "User image is not stored here")
+    image, mime = result
+    return Response(image, mimetype=mime)
+
+
+@app.route(f"{API_PATH}/user_image", methods=["PUT"])
+@with_session
+@connect("db", MAIN_DB)
+@connect("img_db", IMG_DB)
+def set_user_image(db, img_db):
+    if request.content_length > 2*MB:
+        return api_error(413, "Payload too large (>2MB)")
+    new_image = request.get_data(cache=False)
+    try:
+        mime = SUPPORTED_IMAGE_TYPES[imghdr.what(None, new_image)]
+    except KeyError:
+        return api_error(415, "Unsupported image type")
+    cur = img_db.cursor()
+    cur.execute("SELECT count(*) FROM images WHERE user_id = ?", (session["id"],))
+    (count,) = cur.fetchone()
+    if count:
+        cur.execute("UPDATE images SET image = ?, mime = ? WHERE user_id = ?", (new_image, mime, session["id"]))
+    else:
+        cur.execute("INSERT INTO images(user_id, image, mime) VALUES (?, ?, ?)", (session["id"], new_image, mime))
+    cur = db.cursor()
+    cur.execute("UPDATE users SET picture_url = '/saed/api/user_image' WHERE id = ?", (session["id"],))
+    return {}
