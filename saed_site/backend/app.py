@@ -2,12 +2,12 @@ import os
 import imghdr
 import sqlite3
 from enum import IntEnum
-from threading import Lock
 from functools import wraps
+from itertools import islice
 from contextlib import closing
 
 import flask
-from flask import Flask, Response, request, session
+from flask import Flask, Response, request, session, jsonify
 from flask_cors import CORS
 from flask_session import Session
 
@@ -144,6 +144,18 @@ def get_user_image(img_db):
     return Response(image, mimetype=mime)
 
 
+@app.route(f"{API_PATH}/user_image/<int:user_id>")
+@connect("img_db", IMG_DB)
+def get_any_user_image(user_id, img_db):
+    cur = img_db.cursor()
+    cur.execute("SELECT image, mime FROM images WHERE user_id = ?", (user_id,))
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "User image is not stored here")
+    image, mime = result
+    return Response(image, mimetype=mime)
+
+
 @app.route(f"{API_PATH}/user_image", methods=["PUT"])
 @with_session
 @connect("db", MAIN_DB)
@@ -166,3 +178,21 @@ def set_user_image(db, img_db):
     cur = db.cursor()
     cur.execute("UPDATE users SET picture_url = '/saed/api/user_image' WHERE id = ?", (session["id"],))
     return {}
+
+
+def create_notification(db, user_id, message, action_url=None, picture_url=None):
+    cur = db.cursor()
+    cur.execute(f"INSERT INTO notifications(user_id, message, action_url, picture_url) VALUES ({qmarks(4)})", (user_id, message, action_url, picture_url))
+
+
+@app.route(f"{API_PATH}/notifications")
+@with_session
+@connect("db", MAIN_DB)
+def get_notifications(db):
+    cur = db.cursor()
+    try:
+        earlier_than = request.args["earlier_than"]
+        cur.execute("SELECT id, message, action_url, picture_url FROM notifications WHERE user_id = ? AND id < ? ORDER BY id DESC", (session["id"], earlier_than))
+    except KeyError:
+        cur.execute("SELECT id, message, action_url, picture_url FROM notifications WHERE user_id = ? ORDER BY id DESC", (session["id"],))
+    return jsonify([dict(zip(("id", "message", "action_url", "picture_url"), row)) for row in islice(cur, 10)])

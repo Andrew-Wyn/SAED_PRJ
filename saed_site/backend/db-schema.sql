@@ -1,1 +1,2 @@
 CREATE TABLE users (id INTEGER PRIMARY KEY, account_type TINYINT NOT NULL, email TEXT NOT NULL, name TEXT NOT NULL, given_name TEXT, family_name TEXT, picture_url TEXT, musician BOOL NOT NULL, instrument_supplier BOOL NOT NULL, club_owner BOOL NOT NULL, UNIQUE (account_type, email) ON CONFLICT ROLLBACK);
+CREATE TABLE notifications (id INTEGER PRIMARY KEY, user_id INTEGER REFERENCES users(id), message TEXT NOT NULL, action_url TEXT, picture_url TEXT);
