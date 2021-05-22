@@ -189,10 +189,23 @@ def create_notification(db, user_id, message, action_url=None, picture_url=None)
 @with_session
 @connect("db", MAIN_DB)
 def get_notifications(db):
+    earlier_than = request.args.get("earlier_than", None)
+    after = request.args.get("after", None)
+    query = ["SELECT id, message, action_url, picture_url FROM notifications WHERE user_id = ?"]
+    args = [session["id"]]
+    if earlier_than is not None:
+        query.append("AND id < ?")
+        try:
+            args.append(int(earlier_than))
+        except TypeError:
+            return api_error(400, "'earlier_than' should be an integer")
+    if after is not None:
+        query.append("AND id > ?")
+        try:
+            args.append(int(after))
+        except TypeError:
+            return api_error(400, "'after' should be an integer")
+    query.append("ORDER BY id DESC")
     cur = db.cursor()
-    try:
-        earlier_than = request.args["earlier_than"]
-        cur.execute("SELECT id, message, action_url, picture_url FROM notifications WHERE user_id = ? AND id < ? ORDER BY id DESC", (session["id"], earlier_than))
-    except KeyError:
-        cur.execute("SELECT id, message, action_url, picture_url FROM notifications WHERE user_id = ? ORDER BY id DESC", (session["id"],))
+    cur.execute(" ".join(query), tuple(args))
     return jsonify([dict(zip(("id", "message", "action_url", "picture_url"), row)) for row in islice(cur, 10)])
