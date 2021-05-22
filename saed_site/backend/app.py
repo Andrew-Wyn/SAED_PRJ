@@ -4,7 +4,7 @@ import sqlite3
 from enum import IntEnum
 from functools import wraps
 from itertools import islice
-from contextlib import closing
+from contextlib import closing, ExitStack
 
 import flask
 from flask import Flask, Response, request, session, jsonify
@@ -51,15 +51,17 @@ def api_error(code, msg):
     return {"error": msg}, code
 
 
-def connect(arg_name, db_path):
+def connect(**dbs):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            conn = sqlite3.connect(db_path)
-            kwargs[arg_name] = conn
-            with closing(conn):
-                with conn:
-                    return f(*args, **kwargs)
+            with ExitStack() as stack:
+                for arg_name, db_path in dbs.items():
+                    conn = sqlite3.connect(db_path)
+                    kwargs[arg_name] = conn
+                    stack.enter_context(closing(conn))
+                    stack.enter_context(conn)
+                return f(*args, **kwargs)
         return wrapper
     return decorator
 
@@ -93,7 +95,7 @@ def ensure_user_exists(db, account_type, email, name, given_name=None, family_na
 
 
 @app.route(f"{API_PATH}/configure_session", methods=["POST"])
-@connect("db", MAIN_DB)
+@connect(db=MAIN_DB)
 def configure_session(db):
     try:
         token = request.json["auth_token"]
@@ -122,7 +124,7 @@ def configure_session(db):
 
 @app.route(f"{API_PATH}/user_info")
 @with_session
-@connect("db", MAIN_DB)
+@connect(db=MAIN_DB)
 def get_user_info(db):
     cur = db.cursor()
     columns = ("email", "name", "given_name", "family_name", "picture_url", "musician", "instrument_supplier", "club_owner")
@@ -133,7 +135,7 @@ def get_user_info(db):
 
 @app.route(f"{API_PATH}/user_image")
 @with_session
-@connect("img_db", IMG_DB)
+@connect(img_db=IMG_DB)
 def get_user_image(img_db):
     cur = img_db.cursor()
     cur.execute("SELECT image, mime FROM images WHERE user_id = ?", (session["id"],))
@@ -145,7 +147,7 @@ def get_user_image(img_db):
 
 
 @app.route(f"{API_PATH}/user_image/<int:user_id>")
-@connect("img_db", IMG_DB)
+@connect(img_db=IMG_DB)
 def get_any_user_image(user_id, img_db):
     cur = img_db.cursor()
     cur.execute("SELECT image, mime FROM images WHERE user_id = ?", (user_id,))
@@ -158,8 +160,7 @@ def get_any_user_image(user_id, img_db):
 
 @app.route(f"{API_PATH}/user_image", methods=["PUT"])
 @with_session
-@connect("db", MAIN_DB)
-@connect("img_db", IMG_DB)
+@connect(db=MAIN_DB, img_db=IMG_DB)
 def set_user_image(db, img_db):
     if request.content_length > 2*MB:
         return api_error(413, "Payload too large (>2MB)")
@@ -187,7 +188,7 @@ def create_notification(db, user_id, message, action_url=None, picture_url=None)
 
 @app.route(f"{API_PATH}/notifications")
 @with_session
-@connect("db", MAIN_DB)
+@connect(db=MAIN_DB)
 def get_notifications(db):
     earlier_than = request.args.get("earlier_than", None)
     after = request.args.get("after", None)
