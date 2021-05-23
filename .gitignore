@@ -40,16 +40,15 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+__pycache__/
+saed_site/frontend/
+saed_site/backend/uwsgi.ini
+saed_site/backend/flask_session
+saed_site/backend/*.sqlite3
 
 # System Files
 .DS_Store
 Thumbs.db
 
-# Misc
-__pycache__/
-saed_site/frontend/
-saed_site/backend/uwsgi.ini
-saed_site/backend/flask_session
-saed_site/backend/db.sqlite3
-
+# Project
 oauth_data
