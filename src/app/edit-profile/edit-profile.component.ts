@@ -3,9 +3,9 @@ import { UserInfoService } from '../user-info.service';
 import { Location } from '@angular/common';
 
 import { UserInfo } from '../userInfo'
-import { timeout } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import * as GLOBALCONFIG from '../global-config'
 
 @Component({
   selector: 'app-edit-profile',
@@ -15,6 +15,8 @@ import { AuthService } from '../auth.service';
 export class EditProfileComponent implements OnInit {
 
   @Input() userInfo?: UserInfo;
+
+  imageBlob?: string | ArrayBuffer | null;
 
   constructor(public userInfoService: UserInfoService, private location: Location, private cd: ChangeDetectorRef, private router: Router, private authService: AuthService) { }
 
@@ -34,13 +36,12 @@ export class EditProfileComponent implements OnInit {
    
     if(event.target.files && event.target.files.length) {
       const [file] = event.target.files;
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file);
     
       reader.onload = () => {
         if (this.userInfo != undefined){
-          console.log(reader.result);
-          //this.userInfo.picture_url = reader.result;
-          // inviare richiesta di put dell'immagine, poi richiamare set user e retreive user
+          this.imageBlob = reader.result;
+          (document.getElementById('picture-icon') as HTMLImageElement).src = URL.createObjectURL(file);
         }
         // need to run CD since file load runs outside of zone
         this.cd.markForCheck();
@@ -54,15 +55,26 @@ export class EditProfileComponent implements OnInit {
   }
 
   save(): void {
-    this.userInfoService.changeUserinfo(this.userInfo).subscribe(() => {
-      // eseguo anche se fallisce, idempotente ;)
-      this.userInfoService.setUserInfo();
-      this.goBack();
-    });
+    if (this.imageBlob != undefined) {
+      this.userInfoService.updateUserImage(this.imageBlob).subscribe(_ => {
+
+        this.userInfoService.imageProfileUrl = GLOBALCONFIG.backEndLocation + "/" + GLOBALCONFIG.profileImageUrl + "?t=" + new Date().getTime();
+
+        this.userInfoService.changeUserinfo(this.userInfo).subscribe(userInfoUpdated => {
+          this.userInfoService.userInfo = userInfoUpdated;
+          this.goBack();
+        });
+      });
+    } else {
+      this.userInfoService.changeUserinfo(this.userInfo).subscribe(userInfoUpdated => {
+        this.userInfoService.userInfo = userInfoUpdated;
+        this.goBack();
+      });
+    }
   }  
 
   delete() {
-    this.userInfoService.deleteUser(this.userInfo?.email).subscribe(() => {
+    this.userInfoService.deleteUser().subscribe(() => {
       this.authService.logout();
       this.router.navigate(['/login']);
     });

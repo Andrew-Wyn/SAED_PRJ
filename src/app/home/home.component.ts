@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service'
 import { UserInfoService } from '../user-info.service'
 
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',

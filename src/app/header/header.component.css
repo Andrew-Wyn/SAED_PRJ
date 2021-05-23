@@ -85,6 +85,7 @@
   .logo-usr {
       border-radius: 50%;
       height: 50px;
+      background-color: white;
   }
 .right-item {
     position: fixed;

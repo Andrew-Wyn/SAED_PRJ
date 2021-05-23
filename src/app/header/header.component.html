@@ -31,8 +31,7 @@
             </td>
             <td>
                 <a routerLink="/app/home">
-                    <div *ngIf="userInfoService.userInfo?.picture_url; else noPicture"><img class="logo-usr" [src]="userInfoService.userInfo?.picture_url"/></div>
-                    <ng-template #noPicture><img class="logo-usr" src="assets/images/nouserimage.jpeg"/></ng-template>
+                    <div><img class="logo-usr" [src]="userInfoService.imageProfileUrl"/></div>
                 </a>
             </td>
         </tr>

@@ -13,11 +13,12 @@ import * as GLOBALCONFIG from './global-config'
 export class UserInfoService {
 
   userInfo?: UserInfo;
+  imageProfileUrl = GLOBALCONFIG.backEndLocation + "/" + GLOBALCONFIG.profileImageUrl;
 
   private url = 'api/';  // URL to web api
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-  };  
+  };
 
   constructor(private http: HttpClient) {}
 
@@ -30,7 +31,6 @@ export class UserInfoService {
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
 
-      // TODO: send the error to remote logging infrastructure
       console.error(error); // log to console instead
 
       // Let the app keep running by returning an empty result.
@@ -38,39 +38,47 @@ export class UserInfoService {
     };
   }
 
+  // TODO: change name in localSetUserInfo()
   setUserInfo(): void {
     this.http.get<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`)
     .pipe(
-      tap(_ => console.log('fetched heroes')),
-      catchError(this.handleError<UserInfo>('getHeroes'))
+      tap(_ => console.log('get user info')),
+      catchError(this.handleError<UserInfo>('setUserInfo'))
     ).subscribe(userInfo =>{
       this.userInfo = userInfo;
       console.log(this.userInfo);
     });
   }
 
+  // TODO: change name in getUserInfo()
   retriveUserInfo(): Observable<UserInfo> {
     return this.http.get<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`)
     .pipe(
-      tap(_ => console.log('fetched heroes')),
-      catchError(this.handleError<UserInfo>('getHeroes'))
+      tap(_ => console.log('get user info')),
+      catchError(this.handleError<UserInfo>('retriveUserInfo'))
     );
   }
 
-  changeUserinfo(userInfo?: UserInfo): Observable<UserInfo> {
-    console.log(userInfo);
-    return this.http.patch<UserInfo>(`${this.url}/update_user_info`, userInfo, this.httpOptions).pipe(
+  changeUserinfo(userInfo?: UserInfo): Observable<UserInfo | undefined> {
+    return this.http.patch<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`, userInfo, this.httpOptions).pipe(
       tap((userInfoUpdated: UserInfo) => console.log(`changed user: w/ id=${userInfoUpdated.id}`)),
       catchError(this.handleError<UserInfo>('changeUserInfo', this.userInfo))
     );
   }
 
-  deleteUser(email?: string): Observable<UserInfo> {
-    var typeAuth = sessionStorage.getItem('oauthType');
-    return this.http.delete<UserInfo>(`${this.url}/get_user_info/${email}?type=${typeAuth}`)
+  deleteUser(): Observable<UserInfo> {
+    return this.http.delete<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`)
     .pipe(
       tap(_ => console.log('deleted user')),
-      catchError(this.handleError<UserInfo>('deleteUserInfo'))
+      catchError(this.handleError<UserInfo>('deleteUserInfo', this.userInfo))
+    );
+  }
+
+  updateUserImage(imageBlob?: string | ArrayBuffer | null): Observable<any> {    
+    return this.http.put<any>(`${GLOBALCONFIG.backEndLocation}/api/user_image`, imageBlob)
+    .pipe(
+      tap(_ => console.log('updated user image')),
+      catchError(this.handleError<any>('updateUserImage'))
     );
   }
 }

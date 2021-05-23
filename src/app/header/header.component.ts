@@ -8,6 +8,8 @@ import { AuthService } from '../auth.service'
 import { UserInfoService } from '../user-info.service'
 import { Notify } from '../notify'
 
+import * as GLOBALCONFIG from '../global-config'
+
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',

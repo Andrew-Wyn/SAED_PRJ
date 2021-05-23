@@ -1,8 +1,6 @@
 <div *ngIf="userInfoService.userInfo; else loading" class="home">
     <h1>Welcome Back</h1>
-    <div *ngIf="userInfoService.userInfo?.picture_url; else noPicture"><img class="logo-usr" [src]="userInfoService.userInfo?.picture_url"/></div>
-    <ng-template #noPicture><img class="logo-usr" src="https://icon-library.com/images/no-user-image-icon/no-user-image-icon-23.jpg"/></ng-template>
-
+    <div><img class="logo-usr" [src]="userInfoService.imageProfileUrl"/></div>
     <a routerLink="/app/editProfile"><button>change info</button></a>
 
     <h3>Nome Utente: {{userInfoService.userInfo?.name}}</h3>
