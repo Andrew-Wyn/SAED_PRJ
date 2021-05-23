@@ -210,3 +210,7 @@ def get_notifications(db):
     cur = db.cursor()
     cur.execute(" ".join(query), tuple(args))
     return jsonify([dict(zip(("id", "message", "action_url", "picture_url"), row)) for row in islice(cur, 10)])
+
+
+if __name__ == "__main__":
+    app.run()
