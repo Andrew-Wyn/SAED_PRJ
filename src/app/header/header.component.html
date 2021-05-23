@@ -19,9 +19,16 @@
                     <img src="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-bell-512.png" class="bell-icon">
                     <div class="dropdown-notify-content">
                         <div *ngFor="let notification of notifications$" class="item-notify">
-                            {{notification.type}}
-                            <br>
-                            {{notification.text}}
+                            <a [href]="notification.action_url" style="text-decoration:none;"><table>
+                                <tr>
+                                    <td>
+                                        {{notification.message}}&nbsp;
+                                    </td>
+                                    <td>
+                                        <img class="notify-icon" [src]="notification.picture_url">
+                                    </td>
+                                </tr>
+                            </table></a>
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,7 @@
 export interface Notify {
     id: number;
-    text: string;
-    type: string;
+    user_id: number;
+    message: string;
+    action_url: string;
+    picture_url: string;
 }

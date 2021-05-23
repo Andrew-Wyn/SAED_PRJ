@@ -34,7 +34,6 @@ export class HeaderComponent implements OnInit {
     };
   }
 
-  private notificationsUrl = 'api/notify';
   notifications$: Notify[] = [];
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -46,39 +45,20 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     this.userInfoService.retriveUserInfo().subscribe(
       userInfo => {
-        this.getNotify(userInfo.id)
+        this.getNotify()
       }
     );
   }
 
-  getNotify(uid?: number) {
-    const url = `${this.notificationsUrl}/${uid}`;
-    /*this.http.get<Notify[]>(url)
+  getNotify() {
+    const url = `${GLOBALCONFIG.backEndLocation}/api/notifications`;
+    this.http.get<Notify[]>(url)
     .pipe(
       tap(_ => console.log('fetched notify')),
-      repeatWhen(() => interval(1000)),
+      repeatWhen(() => interval(5000)),
       catchError(this.handleError<Notify[]>('getNotify', []))
     ).subscribe(
-      notifications => {this.notifications$ = notifications}
-    );*/
-    of([
-      {
-        id: 1,
-        type: "a",
-        text: "b"
-      }, 
-      {
-        id: 2,
-        type: "a1",
-        text: "b1"
-      }
-    ]).pipe(
-      tap(_ => console.log('fetched notify')),
-      repeatWhen(() => interval(5000)), // repeat the notify api call every tot seconds
-    ).subscribe(
-      notifications => {
-        this.notifications$ = notifications
-      }
+      notifications => {this.notifications$ = notifications; console.log(this.notifications$);  }
     );
   }
 
@@ -86,5 +66,4 @@ export class HeaderComponent implements OnInit {
   logout() {
     this.authService.logout()
   }
-
 }

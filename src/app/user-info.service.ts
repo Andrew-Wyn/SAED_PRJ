@@ -60,7 +60,7 @@ export class UserInfoService {
   }
 
   changeUserinfo(userInfo?: UserInfo): Observable<UserInfo | undefined> {
-    return this.http.patch<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`, userInfo, this.httpOptions).pipe(
+    return this.http.put<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`, userInfo, this.httpOptions).pipe(
       tap((userInfoUpdated: UserInfo) => console.log(`changed user: w/ id=${userInfoUpdated.id}`)),
       catchError(this.handleError<UserInfo>('changeUserInfo', this.userInfo))
     );
