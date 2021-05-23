@@ -25,9 +25,7 @@ export class EditProfileComponent implements OnInit {
   getUserInfo() {
     // pensare di copiare l'oggetto user info dal servizio senza richiamare il backend
     this.userInfoService.retriveUserInfo().subscribe(userInfo => {
-      setTimeout(() => {
         this.userInfo=userInfo
-      }, 500);
     });
   }
 
@@ -41,7 +39,8 @@ export class EditProfileComponent implements OnInit {
       reader.onload = () => {
         if (this.userInfo != undefined){
           console.log(reader.result);
-          this.userInfo.picture = reader.result;
+          //this.userInfo.picture_url = reader.result;
+          // inviare richiesta di put dell'immagine, poi richiamare set user e retreive user
         }
         // need to run CD since file load runs outside of zone
         this.cd.markForCheck();

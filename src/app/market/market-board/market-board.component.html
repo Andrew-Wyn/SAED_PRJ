@@ -36,7 +36,7 @@
             <p><b>Prezzo:</b>&nbsp;{{ad.price}} &euro;</p>
             <p><b>Proprietario:</b>&nbsp;{{ad.owner}}</p>
             <p><b>Tipo:</b>&nbsp;{{ad.type}}</p>
-            <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true && userInfoService.userInfo.id == ad.ownerId">
+            <div sngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.instrument_supplier == true && ad.can_edit">
                 <a [routerLink]="['/app/marketEdit', { adModifiy: ad  | json }]"><button>Modifica Annuncio</button></a>
                 &nbsp;
                 <button (click)="delete(ad.id)">Elimina Annuncio</button>
@@ -44,7 +44,7 @@
         </div>
     </div>
 </div>
-<div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.fornStrum == true">
+<div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.instrument_supplier == true">
     <a routerLink="/app/marketPublish"><button class="btn-publish">Pubblica Annuncio</button></a>
 </div>
 

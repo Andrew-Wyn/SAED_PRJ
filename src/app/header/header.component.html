@@ -27,11 +27,11 @@
                 </div>
             </td>
             <td>
-                {{userInfoService.userInfo?.userName}}
+                {{userInfoService.userInfo?.name}}
             </td>
             <td>
                 <a routerLink="/app/home">
-                    <div *ngIf="userInfoService.userInfo?.picture; else noPicture"><img class="logo-usr" [src]="userInfoService.userInfo?.picture"/></div>
+                    <div *ngIf="userInfoService.userInfo?.picture_url; else noPicture"><img class="logo-usr" [src]="userInfoService.userInfo?.picture_url"/></div>
                     <ng-template #noPicture><img class="logo-usr" src="https://icon-library.com/images/no-user-image-icon/no-user-image-icon-23.jpg"/></ng-template>
                 </a>
             </td>

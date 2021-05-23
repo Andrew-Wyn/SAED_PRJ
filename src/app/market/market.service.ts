@@ -99,7 +99,7 @@ export class MarketService {
       title: "titolo1",
       price: 11,
       owner: "possessore 1",
-      ownerId: 1,
+      can_edit: true,
       type: "tipoA",
     } as Ad,{
       id: 2,
@@ -107,7 +107,7 @@ export class MarketService {
       title: "titolo2",
       price: 22,
       owner: "possessore 2",
-      ownerId: 2,
+      can_edit: true,
       type: "tipoB",
     }as Ad]);
   }

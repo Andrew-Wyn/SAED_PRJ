@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, tap } from 'rxjs/operators';
 
 import { UserInfo } from './userInfo';
+import * as GLOBALCONFIG from './global-config'
 
 
 @Injectable({
@@ -37,48 +38,23 @@ export class UserInfoService {
     };
   }
 
-  setUserInfo(email?: string): void {
-    /* var typeAuth = sessionStorage.getItem('oauthType');
-    this.http.get<UserInfo>(`${this.url}/get_user_info/${email}?type=${typeAuth}`)
+  setUserInfo(): void {
+    this.http.get<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`)
     .pipe(
       tap(_ => console.log('fetched heroes')),
       catchError(this.handleError<UserInfo>('getHeroes'))
-    ).subscribe(userInfo => this.userInfo = userInfo); */
-    of({
-      id: 1,
-      userName: "Pinco Pallo (Google)",
-      email: "google acc email",
-      dataNascita: "google nato ieri",
-      picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
-      musicista: true,
-      propLoc: false,
-      fornStrum: true
-    }).subscribe(userInfo => {
-      
-      setTimeout( () => { this.userInfo = userInfo;}, 500 );
-      
+    ).subscribe(userInfo =>{
+      this.userInfo = userInfo;
+      console.log(this.userInfo);
     });
   }
 
-
-
-  retriveUserInfo(email?: string): Observable<UserInfo> {
-    /* var typeAuth = sessionStorage.getItem('oauthType');
-    this.http.get<UserInfo>(`${this.url}/get_user_info/${email}?type=${typeAuth}`)
+  retriveUserInfo(): Observable<UserInfo> {
+    return this.http.get<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`)
     .pipe(
       tap(_ => console.log('fetched heroes')),
       catchError(this.handleError<UserInfo>('getHeroes'))
-    ).subscribe(userInfo => this.userInfo = userInfo); */
-    return of({
-      id: 1,
-      userName: "Pinco Pallo (Google)",
-      email: "google acc email",
-      dataNascita: "google nato ieri",
-      picture: "https://img.icons8.com/cotton/2x/circled-down--v2.png",
-      musicista: true,
-      propLoc: false,
-      fornStrum: false
-    });
+    );
   }
 
   changeUserinfo(userInfo?: UserInfo): Observable<UserInfo> {

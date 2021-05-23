@@ -42,7 +42,7 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userInfoService.retriveUserInfo(this.authService.email).subscribe(
+    this.userInfoService.retriveUserInfo().subscribe(
       userInfo => {
         this.getNotify(userInfo.id)
       }

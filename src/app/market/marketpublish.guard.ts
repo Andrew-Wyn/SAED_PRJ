@@ -19,11 +19,11 @@ export class MarketpublishGuard implements CanActivate {
 
   checkIsFornStrum(): boolean | UrlTree {
     // TODO rivedere logica di guardia
-    if (this.userInfoService.userInfo == undefined || !this.userInfoService.userInfo.fornStrum) {
+    if (this.userInfoService.userInfo == undefined || !this.userInfoService.userInfo.instrument_supplier) {
       // Redirect to the home page
       return this.router.parseUrl('/app/home');
     }
-    return true;    
+    return true;
   }
   
 }

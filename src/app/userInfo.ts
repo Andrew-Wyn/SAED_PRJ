@@ -1,10 +1,12 @@
 export interface UserInfo {
     id: number;
-    userName: string;
+    account_type: number;
     email: string;
-    dataNascita: string;
-    picture: string | ArrayBuffer | null;
-    musicista: Boolean;
-    propLoc: Boolean;
-    fornStrum: Boolean;
+    name: string;
+    given_name: string;
+    family_name: string;
+    picture_url: string;
+    musician: boolean;
+    instrument_supplier: boolean;
+    club_owner: boolean;
 }

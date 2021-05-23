@@ -20,6 +20,8 @@ export class AuthService {
   redirectUrl: string;
   claims: object | undefined;
 
+  sessionConfigured: boolean = false;
+
   userName?: string;
   password?: string;
 
@@ -39,6 +41,7 @@ export class AuthService {
 
       // TODO: send the error to remote logging infrastructure
       console.error(error); // log to console instead
+      this.sessionConfigured = true
 
       // Let the app keep running by returning an empty result.
       return of(result as T);
@@ -55,16 +58,19 @@ export class AuthService {
     if (this.hasValidAccessToken) {
       // chiamare endpoint /api/get_user_info
       // mettere un cockie di sessione per user info o richiamare ?
-      this.userInfoService.setUserInfo(this.email);
+      //this.userInfoService.setUserInfo();
     }
   }
 
   private configureSession() {
+    if (this.sessionConfigured)
+      return
     this.http.post<any>(`${GLOBALCONFIG.backEndLocation + this.urlConfigureSession}`, {auth_token:this.oauthService.getAccessToken()} as any, this.httpOptions)
     .pipe(
       tap(_ => console.log('configured session')),
       catchError(this.handleError<any>('configureSession'))
-    ).subscribe();
+    ).subscribe(_ => this.userInfoService.setUserInfo());
+    this.sessionConfigured = true;
   }
   
   initConfig() {
@@ -99,7 +105,7 @@ export class AuthService {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
         this.configureSession();
-        this.userInfoService.setUserInfo(this.email);
+        //this.userInfoService.setUserInfo();
       }
     });
   }
@@ -138,7 +144,7 @@ export class AuthService {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
         this.configureSession();
-        this.userInfoService.setUserInfo(this.email);
+        //this.userInfoService.setUserInfo();
         this.router.navigate([this.redirectUrl]);
       })
       .catch(() => {
