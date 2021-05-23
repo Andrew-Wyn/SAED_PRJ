@@ -1,1 +1,1 @@
-CREATE TABLE images (user_id INTEGER PRIMARY KEY, image BLOB NOT NULL, mime TEXT NOT NULL);
+CREATE TABLE profile_pictures (user_id INTEGER PRIMARY KEY, external_url TEXT, image BLOB, mime TEXT);

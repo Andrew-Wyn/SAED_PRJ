@@ -8,7 +8,7 @@ from itertools import islice
 from contextlib import closing, ExitStack
 
 import flask
-from flask import Flask, Response, request, session, jsonify
+from flask import Flask, Response, request, redirect, session, jsonify
 from flask_cors import CORS
 from flask_session import Session
 
@@ -87,19 +87,23 @@ def get_user_id(db, account_type, email):
     return record[0]
 
 
-def ensure_user_exists(db, account_type, email, name, given_name=None, family_name=None, picture_url=None):
+def ensure_user_exists(db, img_db, account_type, email, name, given_name=None, family_name=None, picture_url=None):
     try:
         return get_user_id(db, account_type, email)
     except KeyError:
         cur = db.cursor()
-        cur.execute(f"INSERT INTO users(account_type, email, name, given_name, family_name, picture_url, musician, instrument_supplier, club_owner) VALUES ({qmarks(9)})",
-                (account_type, email, name, given_name, family_name, picture_url, False, False, False))
-        return get_user_id(db, account_type, email)
+        cur.execute(f"INSERT INTO users(account_type, email, name, given_name, family_name, musician, instrument_supplier, club_owner) VALUES ({qmarks(8)})",
+                (account_type, email, name, given_name, family_name, False, False, False))
+        user_id = get_user_id(db, account_type, email)
+        if picture_url is not None:
+            cur = img_db.cursor()
+            cur.execute(f"INSERT INTO profile_pictures(user_id, external_url) VALUES (?, ?)", (user_id, picture_url))
+        return user_id
 
 
 @app.route(f"{API_PATH}/configure_session", methods=["POST"])
-@connect(db=MAIN_DB)
-def configure_session(db):
+@connect(db=MAIN_DB, img_db=IMG_DB)
+def configure_session(db, img_db):
     try:
         token = request.json["auth_token"]
     except KeyError:
@@ -115,6 +119,7 @@ def configure_session(db):
 
     session["id"] = ensure_user_exists(
             db,
+            img_db,
             AccountType.GOOGLE,
             userinfo["email"],
             userinfo["name"],
@@ -130,35 +135,38 @@ def configure_session(db):
 @connect(db=MAIN_DB)
 def get_user_info(db):
     cur = db.cursor()
-    columns = ("email", "name", "given_name", "family_name", "picture_url", "musician", "instrument_supplier", "club_owner")
+    columns = ("email", "name", "given_name", "family_name", "musician", "instrument_supplier", "club_owner")
     cur.execute(f"SELECT {','.join(columns)} FROM users WHERE id = ?", (session["id"],))
     result = cur.fetchone()
     return dict(zip(columns, result))
+
+
+def _get_user_image(img_db, user_id):
+    cur = img_db.cursor()
+    cur.execute("SELECT image, mime FROM profile_pictures WHERE user_id = ? AND image IS NOT NULL", (user_id,))
+    result = cur.fetchone()
+    if result is not None:
+        image, mime = result
+        return Response(image, mimetype=mime)
+    cur.execute("SELECT external_url FROM profile_pictures WHERE user_id = ? AND external_url IS NOT NULL", (user_id,))
+    result = cur.fetchone()
+    if result is not None:
+        (external_url,) = result
+        return redirect(external_url)
+    return api_error(404, "Not found")
 
 
 @app.route(f"{API_PATH}/user_image")
 @with_session
 @connect(img_db=IMG_DB)
 def get_user_image(img_db):
-    cur = img_db.cursor()
-    cur.execute("SELECT image, mime FROM images WHERE user_id = ?", (session["id"],))
-    result = cur.fetchone()
-    if result is None:
-        return api_error(404, "User image is not stored here")
-    image, mime = result
-    return Response(image, mimetype=mime)
+    return _get_user_image(img_db, session["id"])
 
 
 @app.route(f"{API_PATH}/user_image/<int:user_id>")
 @connect(img_db=IMG_DB)
-def get_any_user_image(user_id, img_db):
-    cur = img_db.cursor()
-    cur.execute("SELECT image, mime FROM images WHERE user_id = ?", (user_id,))
-    result = cur.fetchone()
-    if result is None:
-        return api_error(404, "User image is not stored here")
-    image, mime = result
-    return Response(image, mimetype=mime)
+def get_any_user_image(img_db, user_id):
+    return _get_user_image(img_db, user_id)
 
 
 @app.route(f"{API_PATH}/user_image", methods=["PUT"])
@@ -173,14 +181,12 @@ def set_user_image(db, img_db):
     except KeyError:
         return api_error(415, "Unsupported image type")
     cur = img_db.cursor()
-    cur.execute("SELECT count(*) FROM images WHERE user_id = ?", (session["id"],))
+    cur.execute("SELECT count(*) FROM profile_pictures WHERE user_id = ?", (session["id"],))
     (count,) = cur.fetchone()
     if count:
-        cur.execute("UPDATE images SET image = ?, mime = ? WHERE user_id = ?", (new_image, mime, session["id"]))
+        cur.execute("UPDATE profile_pictures SET external_url = NULL, image = ?, mime = ? WHERE user_id = ?", (new_image, mime, session["id"]))
     else:
-        cur.execute("INSERT INTO images(user_id, image, mime) VALUES (?, ?, ?)", (session["id"], new_image, mime))
-    cur = db.cursor()
-    cur.execute("UPDATE users SET picture_url = '/saed/api/user_image' WHERE id = ?", (session["id"],))
+        cur.execute("INSERT INTO profile_pictures(user_id, image, mime) VALUES (?, ?, ?)", (session["id"], new_image, mime))
     return {}
 
 
