@@ -35,6 +35,8 @@ SUPPORTED_IMAGE_TYPES = {
     "webp": "image/webp"
 }
 
+user_info_columns = "email", "name", "given_name", "family_name", "musician", "instrument_supplier", "club_owner"
+
 KB = 1024
 MB = KB**2
 GB = KB**3
@@ -48,6 +50,10 @@ AccountType = IntEnum("AccountType", "GOOGLE") #FACEBOOK...
 
 def qmarks(n):
     return ", ".join(("?",) * n)
+
+
+def updlist(columns):
+    return ", ".join(f"{c} = ?" for c in columns)
 
 
 def api_error(code, msg):
@@ -135,10 +141,23 @@ def configure_session(db, img_db):
 @connect(db=MAIN_DB)
 def get_user_info(db):
     cur = db.cursor()
-    columns = ("email", "name", "given_name", "family_name", "musician", "instrument_supplier", "club_owner")
-    cur.execute(f"SELECT {','.join(columns)} FROM users WHERE id = ?", (session["id"],))
+    cur.execute(f"SELECT {','.join(user_info_columns)} FROM users WHERE id = ?", (session["id"],))
     result = cur.fetchone()
-    return dict(zip(columns, result))
+    return dict(zip(user_info_columns, result))
+
+
+@app.route(f"{API_PATH}/user_info", methods=["PUT"])
+@with_session
+@connect(db=MAIN_DB)
+def set_user_info(db):
+    cur = db.cursor()
+    try:
+        cur.execute(
+                f"UPDATE users SET {updlist(user_info_columns)} WHERE id = ?",
+                (*(request.json[c] for c in user_info_columns), session["id"]))
+    except KeyError:
+        return api_error(400, "Bad request")
+    return {}
 
 
 def _get_user_image(img_db, user_id):
