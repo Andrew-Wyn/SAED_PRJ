@@ -13,7 +13,7 @@ import { Notify } from '../notify'
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export class HeaderComponent implements OnInit {  
+export class HeaderComponent implements OnInit {
 
   /**
    * Handle Http operation that failed.

@@ -32,7 +32,7 @@
         <div class="card">
             <div><h2>{{ad.title}}</h2></div>
                 <div *ngIf="ad.photo != undefined; else noPicture"><img class="photo" [src]="ad.photo"/></div>
-                <ng-template #noPicture><div><img class="photo" src="https://freepikpsd.com/wp-content/uploads/2019/10/no-image-available-icon-png-8-Transparent-Images.png"/></div></ng-template>
+                <ng-template #noPicture><div><img class="photo" src="assets/images/noimage.png"/></div></ng-template>
             <p><b>Prezzo:</b>&nbsp;{{ad.price}} &euro;</p>
             <p><b>Proprietario:</b>&nbsp;{{ad.owner}}</p>
             <p><b>Tipo:</b>&nbsp;{{ad.type}}</p>

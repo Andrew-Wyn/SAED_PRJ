@@ -15,6 +15,7 @@ import { AdSearchOpt } from '../adSearchOpt'
   styleUrls: ['./market-board.component.css']
 })
 export class MarketBoardComponent implements OnInit {
+
   ads$: Observable<Ad[]> = of([]);
 
   adSearchOpt = new FormGroup({
