@@ -2,6 +2,7 @@ import os
 import imghdr
 import sqlite3
 from enum import IntEnum
+from pathlib import Path
 from functools import wraps
 from itertools import islice
 from contextlib import closing, ExitStack
@@ -16,6 +17,8 @@ from google.oauth2.credentials import Credentials
 from google.auth.exceptions import RefreshError
 
 
+root_dir = Path(__file__).parent
+
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -23,8 +26,8 @@ CORS(app, supports_credentials=True)
 Session(app)
 
 API_PATH = "/saed/api"
-MAIN_DB = "db.sqlite3"
-IMG_DB = "img-db.sqlite3"
+MAIN_DB = root_dir/"db.sqlite3"
+IMG_DB = root_dir/"img-db.sqlite3"
 SUPPORTED_IMAGE_TYPES = {
     "png": "image/png",
     "jpeg": "image/jpeg",
