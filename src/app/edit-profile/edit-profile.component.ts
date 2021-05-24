@@ -58,15 +58,17 @@ export class EditProfileComponent implements OnInit {
     if (this.imageBlob != undefined) {
       this.userInfoService.updateUserImage(this.imageBlob).subscribe(_ => {
 
-        this.userInfoService.imageProfileUrl = GLOBALCONFIG.backEndLocation + "/" + GLOBALCONFIG.profileImageUrl + "?t=" + new Date().getTime();
+        this.userInfoService.imageProfileUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + GLOBALCONFIG.profileImageUrl + "?t=" + new Date().getTime();
 
         this.userInfoService.changeUserinfo(this.userInfo).subscribe(userInfoUpdated => {
+          console.log(userInfoUpdated);
           this.userInfoService.userInfo = userInfoUpdated;
           this.goBack();
         });
       });
     } else {
-      this.userInfoService.changeUserinfo(this.userInfo).subscribe(userInfoUpdated => {
+      this.userInfoService.changeUserinfo(this.userInfo).subscribe((userInfoUpdated) => {
+        console.log(userInfoUpdated);
         this.userInfoService.userInfo = userInfoUpdated;
         this.goBack();
       });

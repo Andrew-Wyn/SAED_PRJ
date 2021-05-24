@@ -13,9 +13,9 @@ import * as GLOBALCONFIG from './global-config'
 export class UserInfoService {
 
   userInfo?: UserInfo;
-  imageProfileUrl = GLOBALCONFIG.backEndLocation + "/" + GLOBALCONFIG.profileImageUrl;
+  imageProfileUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + GLOBALCONFIG.profileImageUrl;
 
-  private url = 'api/';  // URL to web api
+  private apiURL = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute;  // URL to web api
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
@@ -40,7 +40,7 @@ export class UserInfoService {
 
   // TODO: change name in localSetUserInfo()
   setUserInfo(): void {
-    this.http.get<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`)
+    this.http.get<UserInfo>(`${this.apiURL}user_info`)
     .pipe(
       tap(_ => console.log('get user info')),
       catchError(this.handleError<UserInfo>('setUserInfo'))
@@ -52,7 +52,7 @@ export class UserInfoService {
 
   // TODO: change name in getUserInfo()
   retriveUserInfo(): Observable<UserInfo> {
-    return this.http.get<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`)
+    return this.http.get<UserInfo>(`${this.apiURL}user_info`)
     .pipe(
       tap(_ => console.log('get user info')),
       catchError(this.handleError<UserInfo>('retriveUserInfo'))
@@ -60,14 +60,14 @@ export class UserInfoService {
   }
 
   changeUserinfo(userInfo?: UserInfo): Observable<UserInfo | undefined> {
-    return this.http.put<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`, userInfo, this.httpOptions).pipe(
-      tap((userInfoUpdated: UserInfo) => console.log(`changed user: w/ id=${userInfoUpdated.id}`)),
+    return this.http.put<UserInfo>(`${this.apiURL}user_info`, userInfo, this.httpOptions).pipe(
+      tap((userInfoUpdated: UserInfo) => console.log(`changed user:`)),
       catchError(this.handleError<UserInfo>('changeUserInfo', this.userInfo))
     );
   }
 
   deleteUser(): Observable<UserInfo> {
-    return this.http.delete<UserInfo>(`${GLOBALCONFIG.backEndLocation}/api/user_info`)
+    return this.http.delete<UserInfo>(`${this.apiURL}user_info`)
     .pipe(
       tap(_ => console.log('deleted user')),
       catchError(this.handleError<UserInfo>('deleteUserInfo', this.userInfo))
@@ -75,7 +75,7 @@ export class UserInfoService {
   }
 
   updateUserImage(imageBlob?: string | ArrayBuffer | null): Observable<any> {    
-    return this.http.put<any>(`${GLOBALCONFIG.backEndLocation}/api/user_image`, imageBlob)
+    return this.http.put<any>(`${this.apiURL}user_image`, imageBlob)
     .pipe(
       tap(_ => console.log('updated user image')),
       catchError(this.handleError<any>('updateUserImage'))

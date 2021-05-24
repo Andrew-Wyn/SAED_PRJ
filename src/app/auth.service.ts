@@ -25,7 +25,6 @@ export class AuthService {
   userName?: string;
   password?: string;
 
-  private urlConfigureSession = '/api/configure_session';  // URL to web api
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json'}),
   };
@@ -65,7 +64,7 @@ export class AuthService {
   private configureSession() {
     if (this.sessionConfigured)
       return
-    this.http.post<any>(`${GLOBALCONFIG.backEndLocation + this.urlConfigureSession}`, {auth_token:this.oauthService.getAccessToken()} as any, this.httpOptions)
+    this.http.post<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}configure_session`, {auth_token:this.oauthService.getAccessToken()} as any, this.httpOptions)
     .pipe(
       tap(_ => console.log('configured session')),
       catchError(this.handleError<any>('configureSession'))

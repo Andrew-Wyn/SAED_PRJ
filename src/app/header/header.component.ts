@@ -43,15 +43,11 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userInfoService.retriveUserInfo().subscribe(
-      userInfo => {
-        this.getNotify()
-      }
-    );
+    this.getNotify()
   }
 
   getNotify() {
-    const url = `${GLOBALCONFIG.backEndLocation}/api/notifications`;
+    const url = `${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}notifications`;
     this.http.get<Notify[]>(url)
     .pipe(
       tap(_ => console.log('fetched notify')),

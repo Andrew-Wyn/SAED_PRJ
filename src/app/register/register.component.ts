@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
+import * as GLOBALCONFIG from '../global-config'
 
 const password_check: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const password = control.get('password');
@@ -28,7 +29,6 @@ export class RegisterComponent implements OnInit {
     forn_strum: new FormControl(false),
   },{ validators: password_check });
 
-  private registerUrl = '/saed/api/register';  // URL to web api
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };  
@@ -61,7 +61,7 @@ export class RegisterComponent implements OnInit {
   }
 
   register() {
-    this.http.post<any>(this.registerUrl, this.registerForm.value, this.httpOptions).pipe(
+    this.http.post<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}register`, this.registerForm.value, this.httpOptions).pipe(
       tap(_ => console.log("registered")),
       catchError(this.handleError<any>("register"))
     ).subscribe();
