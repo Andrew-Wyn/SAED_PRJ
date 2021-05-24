@@ -61,8 +61,7 @@ export class UserInfoService {
 
   changeUserinfo(userInfo?: UserInfo): Observable<UserInfo | undefined> {
     return this.http.put<UserInfo>(`${this.apiURL}user_info`, userInfo, this.httpOptions).pipe(
-      tap((userInfoUpdated: UserInfo) => console.log(`changed user:`)),
-      catchError(this.handleError<UserInfo>('changeUserInfo', this.userInfo))
+      tap(_ => console.log(`changed user:`))
     );
   }
 
