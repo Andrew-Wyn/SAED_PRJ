@@ -84,6 +84,14 @@ def with_session(f):
     return wrapper
 
 
+@app.route(f"{API_PATH}/have_session")
+def logged_in():
+    if "id" in session:
+        return {"have_session": True}
+    else:
+        return {"have_session": False}
+
+
 def get_user_id(db, account_type, email):
     cur = db.cursor()
     cur.execute("SELECT id FROM users WHERE account_type = ? AND email = ?", (account_type, email))
