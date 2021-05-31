@@ -1,4 +1,5 @@
 import os
+import re
 import imghdr
 import sqlite3
 from enum import IntEnum
@@ -35,6 +36,7 @@ SUPPORTED_IMAGE_TYPES = {
     "webp": "image/webp"
 }
 
+ad_types = "Locale", "Band", "Musicista", "Strumento"
 user_info_columns = "email", "name", "given_name", "family_name", "musician", "instrument_supplier", "club_owner"
 
 KB = 1024
@@ -56,8 +58,29 @@ def updlist(columns):
     return ", ".join(f"{c} = ?" for c in columns)
 
 
+def qualify_cols(table, columns):
+    return (f"{table}.{c}" for c in columns)
+
+
+def cols_list(columns):
+    return ",".join(columns)
+
+
 def api_error(code, msg):
     return {"error": msg}, code
+
+
+price_re = re.compile(r"(?P<units>\d+)(\.(?P<cents>\d\d))?")
+
+def validate_price(s):
+    m = price_re.fullmatch(s)
+    if not m:
+        raise ValueError
+    price = int(m.group("units"))*100
+    if m.group("cents"):
+        price += int(m.group("cents"))
+    q, r = divmod(price, 100)
+    return f"{q}.{r:02}"
 
 
 def connect(**dbs):
@@ -82,6 +105,38 @@ def with_session(f):
             return api_error(401, "Unauthorized")
         return f(*args, **kwargs)
     return wrapper
+
+
+class Namespace:
+    pass
+
+
+def with_json(**fields):
+    def decorator(f):
+        bad_request = api_error(400, "Bad request")
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if request.json is None:
+                return bad_request
+            ns = Namespace()
+            for fieldname, validator in fields.items():
+                try:
+                    value = request.json[fieldname]
+                except KeyError:
+                    return bad_request
+                if callable(validator):
+                    try:
+                        setattr(ns, fieldname, validator(value))
+                    except ValueError:
+                        return bad_request
+                else:
+                    if value not in validator:
+                        return bad_request
+                    setattr(ns, fieldname, value)
+            kwargs["json"] = ns
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 @app.route(f"{API_PATH}/have_session")
@@ -149,7 +204,7 @@ def configure_session(db, img_db):
 @connect(db=MAIN_DB)
 def get_user_info(db):
     cur = db.cursor()
-    cur.execute(f"SELECT {','.join(user_info_columns)} FROM users WHERE id = ?", (session["id"],))
+    cur.execute(f"SELECT {cols_list(user_info_columns)} FROM users WHERE id = ?", (session["id"],))
     result = cur.fetchone()
     return dict(zip(user_info_columns, result))
 
@@ -246,6 +301,56 @@ def get_notifications(db):
     cur = db.cursor()
     cur.execute(" ".join(query), tuple(args))
     return jsonify([dict(zip(("id", "message", "action_url", "picture_url"), row)) for row in islice(cur, 10)])
+
+
+@app.route(f"{API_PATH}/ads/<int:ad_id>")
+@with_session
+@connect(db=MAIN_DB)
+def get_ad(db, ad_id):
+    columns = "photo", "title", "description", "price", "owner", "ad_type"
+    user_columns = "name", "email", "phone_number"
+    qualified_cols = [*qualify_cols("ads", columns), *qualify_cols("users", user_columns)]
+    cur = db.cursor()
+    cur.execute(f"SELECT {cols_list(qualified_cols)} FROM ads JOIN users ON ads.owner = users.id WHERE ads.id = ?", (ad_id,))
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "Not found")
+    result = dict(zip(qualified_cols, result))
+    ret = {k.removeprefix("ads."): v for k, v in result.items() if k.startswith("ads.")}
+    ret["can_edit"] = (ret["owner"] == session["id"])
+    ret["owner"] = result["users.name"]
+    cur.execute(
+            "SELECT NULL FROM ads_intrested WHERE ad_id = ? AND user_id = ?",
+            (ad_id, session["id"]))
+    if cur.fetchone() is not None:
+        ret["contact_info"] = {
+            "email": result["users.email"],
+            "phone_number": result["users.phone_number"]
+        }
+    else:
+        ret["contact_info"] = None
+    return ret
+
+
+#@app.route(f"{API_PATH}/ads/<int:ad_id>", mothods=["PUT"])
+#@app.route(f"{API_PATH}/ads?bla=foo")
+
+
+@app.route(f"{API_PATH}/ads", methods=["POST"])
+@with_session
+@with_json(title=str, description=str, price=validate_price, ad_type=ad_types)
+@connect(db=MAIN_DB)
+def add_ad(db, json):
+    cur = db.cursor()
+    cur.execute(
+            f"INSERT INTO ads(title, description, price, owner, ad_type) VALUES ({qmarks(5)})",
+            (json.title, json.description, json.price, session["id"], json.ad_type))
+    return {"ad_id": cur.lastrowid}
+
+
+#@app.route(f"{API_PATH}/ads/photos/<int:ad_id>", mothods=["PUT"])
+
+#@app.route(f"{API_PATH}/ads/intrested/<int:ad_id>", mothods=["POST"])
 
 
 if __name__ == "__main__":
