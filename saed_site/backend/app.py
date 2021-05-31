@@ -83,6 +83,15 @@ def validate_price(s):
     return f"{q}.{r:02}"
 
 
+# RFC 5322
+email_re = re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")
+
+def validate_email(s):
+    if not email_re.fullmatch(s):
+        raise ValueError
+    return s
+
+
 def connect(**dbs):
     def decorator(f):
         @wraps(f)
@@ -171,14 +180,10 @@ def ensure_user_exists(db, img_db, account_type, email, name, given_name=None, f
 
 
 @app.route(f"{API_PATH}/configure_session", methods=["POST"])
+@with_json(auth_token=str)
 @connect(db=MAIN_DB, img_db=IMG_DB)
-def configure_session(db, img_db):
-    try:
-        token = request.json["auth_token"]
-    except KeyError:
-        return api_error(400, "Oauth2 token not provided")
-
-    credentials = Credentials(token, client_id=google_client_id, client_secret=google_client_secret, scopes=google_scopes)
+def configure_session(db, img_db, json):
+    credentials = Credentials(json.auth_token, client_id=google_client_id, client_secret=google_client_secret, scopes=google_scopes)
     oauth2 = build("oauth2", "v2", credentials=credentials)
 
     try:
@@ -211,13 +216,14 @@ def get_user_info(db):
 
 @app.route(f"{API_PATH}/user_info", methods=["PUT"])
 @with_session
+@with_json(email=validate_email, **{k: str for k in user_info_columns if k != "email"})
 @connect(db=MAIN_DB)
-def set_user_info(db):
+def set_user_info(db, json):
     cur = db.cursor()
     try:
         cur.execute(
                 f"UPDATE users SET {updlist(user_info_columns)} WHERE id = ?",
-                (*(request.json[c] for c in user_info_columns), session["id"]))
+                (*(getattr(json, c) for c in user_info_columns), session["id"]))
     except KeyError:
         return api_error(400, "Bad request")
     return {}
