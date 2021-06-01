@@ -22,7 +22,6 @@ CREATE TABLE notifications (
 
 CREATE TABLE ads (
     id INTEGER PRIMARY KEY,
-    photo TEXT,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     price TEXT NOT NULL,

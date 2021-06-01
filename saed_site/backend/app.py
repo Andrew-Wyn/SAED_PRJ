@@ -229,58 +229,70 @@ def set_user_info(db, json):
     return {}
 
 
-def _get_user_image(img_db, user_id):
+def get_image(img_db, with_external_url, table, id_value):
     cur = img_db.cursor()
-    cur.execute("SELECT image, mime FROM profile_pictures WHERE user_id = ? AND image IS NOT NULL", (user_id,))
+    cur.execute(f"SELECT image, mime FROM {table} WHERE id = ? AND image IS NOT NULL", (id_value,))
     result = cur.fetchone()
     if result is not None:
         image, mime = result
         return Response(image, mimetype=mime)
-    cur.execute("SELECT external_url FROM profile_pictures WHERE user_id = ? AND external_url IS NOT NULL", (user_id,))
+    if not with_external_url:
+        return api_error(404, "Not found")
+    cur.execute(f"SELECT external_url FROM {table} WHERE id = ? AND external_url IS NOT NULL", (id_value,))
     result = cur.fetchone()
-    if result is not None:
-        (external_url,) = result
-        return redirect(external_url)
-    return api_error(404, "Not found")
+    if result is None:
+        return api_error(404, "Not found")
+    (external_url,) = result
+    return redirect(external_url)
 
 
-@app.route(f"{API_PATH}/user_image")
-@with_session
-@connect(img_db=IMG_DB)
-def get_user_image(img_db):
-    return _get_user_image(img_db, session["id"])
-
-
-@app.route(f"{API_PATH}/user_image/<int:user_id>")
-@connect(img_db=IMG_DB)
-def get_any_user_image(img_db, user_id):
-    return _get_user_image(img_db, user_id)
-
-
-@app.route(f"{API_PATH}/user_image", methods=["PUT"])
-@with_session
-@connect(db=MAIN_DB, img_db=IMG_DB)
-def set_user_image(db, img_db):
-    if request.content_length > 2*MB:
-        return api_error(413, "Payload too large (>2MB)")
+def set_image(img_db, with_external_url, table, id_value, max_size):
+    if request.content_length > max_size:
+        return api_error(413, "Payload too large")
     new_image = request.get_data(cache=False)
     try:
         mime = SUPPORTED_IMAGE_TYPES[imghdr.what(None, new_image)]
     except KeyError:
         return api_error(415, "Unsupported image type")
     cur = img_db.cursor()
-    cur.execute("SELECT count(*) FROM profile_pictures WHERE user_id = ?", (session["id"],))
+    cur.execute(f"SELECT count(*) FROM {table} WHERE id = ?", (id_value,))
     (count,) = cur.fetchone()
     if count:
-        cur.execute("UPDATE profile_pictures SET external_url = NULL, image = ?, mime = ? WHERE user_id = ?", (new_image, mime, session["id"]))
+        cur.execute(f"UPDATE {table} SET {'external_url = NULL,' if with_external_url else ''} image = ?, mime = ? WHERE id = ?", (new_image, mime, id_value))
     else:
-        cur.execute("INSERT INTO profile_pictures(user_id, image, mime) VALUES (?, ?, ?)", (session["id"], new_image, mime))
+        cur.execute(f"INSERT INTO {table}(id, image, mime) VALUES (?, ?, ?)", (id_value, new_image, mime))
     return {}
+
+
+@app.route(f"{API_PATH}/user_image/<int:user_id>")
+@connect(img_db=IMG_DB)
+def get_any_user_image(img_db, user_id):
+    return get_image(img_db, True, "profile_pictures", user_id)
+
+
+@app.route(f"{API_PATH}/user_image")
+@with_session
+@connect(img_db=IMG_DB)
+def get_user_image(img_db):
+    return get_image(img_db, True, "profile_pictures", session["id"])
+
+
+@app.route(f"{API_PATH}/user_image", methods=["PUT"])
+@with_session
+@connect(img_db=IMG_DB)
+def set_user_image(img_db):
+    return set_image(img_db, True, "profile_pictures", session["id"], 2*MB)
 
 
 def create_notification(db, user_id, message, action_url=None, picture_url=None):
     cur = db.cursor()
     cur.execute(f"INSERT INTO notifications(user_id, message, action_url, picture_url) VALUES ({qmarks(4)})", (user_id, message, action_url, picture_url))
+
+
+def is_ad_owner(db, user_id, ad_id):
+    cur = db.cursor()
+    cur.execute("SELECT NULL FROM ads WHERE id = ? AND owner = ?", (ad_id, user_id))
+    return bool(cur.fetchone())
 
 
 @app.route(f"{API_PATH}/notifications")
@@ -354,7 +366,22 @@ def add_ad(db, json):
     return {"ad_id": cur.lastrowid}
 
 
-#@app.route(f"{API_PATH}/ads/photos/<int:ad_id>", mothods=["PUT"])
+@app.route(f"{API_PATH}/ads/photos/<int:ad_id>")
+@with_session
+@connect(img_db=IMG_DB)
+def get_ad_image(img_db, ad_id):
+    return get_image(img_db, False, "ad_images", ad_id)
+
+
+@app.route(f"{API_PATH}/ads/photos/<int:ad_id>", methods=["PUT"])
+@with_session
+@connect(db=MAIN_DB, img_db=IMG_DB)
+def set_ad_image(db, img_db, ad_id):
+    if is_ad_owner(db, session["id"], ad_id):
+        return set_image(img_db, False, "ad_images", ad_id, 4*MB)
+    else:
+        return api_error(401, "Unauthorized")
+
 
 #@app.route(f"{API_PATH}/ads/intrested/<int:ad_id>", mothods=["POST"])
 
