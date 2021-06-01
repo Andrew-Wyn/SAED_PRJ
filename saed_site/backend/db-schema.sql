@@ -29,7 +29,7 @@ CREATE TABLE ads (
     ad_type TEXT NOT NULL
 );
 
-CREATE TABLE ads_intrested (
+CREATE TABLE ads_interested (
     ad_id INTEGER,
     user_id INTEGER,
     PRIMARY KEY (ad_id, user_id)

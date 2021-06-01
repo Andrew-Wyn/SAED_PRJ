@@ -7,6 +7,7 @@ from pathlib import Path
 from functools import wraps
 from itertools import islice
 from contextlib import closing, ExitStack
+from sqlite3 import IntegrityError
 
 import flask
 from flask import Flask, Response, request, redirect, session, jsonify
@@ -338,7 +339,7 @@ def get_ad(db, ad_id):
     ret["can_edit"] = (ret["owner"] == session["id"])
     ret["owner"] = result["users.name"]
     cur.execute(
-            "SELECT NULL FROM ads_intrested WHERE ad_id = ? AND user_id = ?",
+            "SELECT NULL FROM ads_interested WHERE ad_id = ? AND user_id = ?",
             (ad_id, session["id"]))
     if cur.fetchone() is not None:
         ret["contact_info"] = {
@@ -383,7 +384,25 @@ def set_ad_image(db, img_db, ad_id):
         return api_error(401, "Unauthorized")
 
 
-#@app.route(f"{API_PATH}/ads/intrested/<int:ad_id>", mothods=["POST"])
+@app.route(f"{API_PATH}/ads/interested/<int:ad_id>", methods=["POST"])
+@with_session
+@connect(db=MAIN_DB)
+def signal_interest(db, ad_id):
+    cur = db.cursor()
+    try:
+        cur.execute("INSERT INTO ads_interested(ad_id, user_id) VALUES (?, ?)", (ad_id, session["id"]))
+    except IntegrityError:
+        pass
+    return {}
+
+
+@app.route(f"{API_PATH}/ads/interested/<int:ad_id>", methods=["DELETE"])
+@with_session
+@connect(db=MAIN_DB)
+def revoke_interest(db, ad_id):
+    cur = db.cursor()
+    cur.execute("DELETE FROM ads_interested WHERE ad_id = ? AND user_id = ?", (ad_id, session["id"]))
+    return {}
 
 
 if __name__ == "__main__":
