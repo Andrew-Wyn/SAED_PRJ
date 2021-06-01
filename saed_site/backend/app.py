@@ -351,8 +351,22 @@ def get_ad(db, ad_id):
     return ret
 
 
-#@app.route(f"{API_PATH}/ads/<int:ad_id>", mothods=["PUT"])
 #@app.route(f"{API_PATH}/ads?bla=foo")
+
+
+@app.route(f"{API_PATH}/ads/<int:ad_id>", methods=["PUT"])
+@with_session
+@with_json(title=str, description=str, price=validate_price, ad_type=ad_types)
+@connect(db=MAIN_DB)
+def update_ad(db, json, ad_id):
+    columns = "title", "description", "price", "ad_type"
+    cur = db.cursor()
+    cur.execute(
+            f"UPDATE ads SET {updlist(columns)} WHERE id = ? AND owner = ?",
+            (json.title, json.description, json.price, json.ad_type, ad_id, session["id"]))
+    if not cur.rowcount:
+        return api_error(401, "Unauthorized")
+    return {}
 
 
 @app.route(f"{API_PATH}/ads", methods=["POST"])
@@ -378,10 +392,9 @@ def get_ad_image(img_db, ad_id):
 @with_session
 @connect(db=MAIN_DB, img_db=IMG_DB)
 def set_ad_image(db, img_db, ad_id):
-    if is_ad_owner(db, session["id"], ad_id):
-        return set_image(img_db, False, "ad_images", ad_id, 4*MB)
-    else:
+    if not is_ad_owner(db, session["id"], ad_id):
         return api_error(401, "Unauthorized")
+    return set_image(img_db, False, "ad_images", ad_id, 4*MB)
 
 
 @app.route(f"{API_PATH}/ads/interested/<int:ad_id>", methods=["POST"])
