@@ -485,12 +485,14 @@ def set_ad_image(db, img_db, ad_id):
 @connect(db=MAIN_DB)
 def signal_interest(db, ad_id):
     cur = db.cursor()
+    cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
+    (owner, title) = cur.fetchone()
+    if owner == session["id"]:
+        return api_error(418, "I'm a teapot")
     try:
         cur.execute("INSERT INTO ads_interested(ad_id, user_id) VALUES (?, ?)", (ad_id, session["id"]))
     except IntegrityError:
         return {}
-    cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
-    (owner, title) = cur.fetchone()
     create_notification(db, owner, f'An user is interested into your ad: "{title}"', picture_url=f"/saed/api/user_image/{session['id']}")
     return {}
 
