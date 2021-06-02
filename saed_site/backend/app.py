@@ -80,7 +80,11 @@ def validate_price(s):
     price = int(m.group("units"))*100
     if m.group("cents"):
         price += int(m.group("cents"))
-    q, r = divmod(price, 100)
+    return price
+
+
+def to_cents(n):
+    q, r = divmod(n, 100)
     return f"{q}.{r:02}"
 
 
@@ -91,6 +95,12 @@ def validate_email(s):
     if not email_re.fullmatch(s):
         raise ValueError
     return s
+
+
+def validate_ad_type(t):
+    if t not in ad_types:
+        raise ValueError
+    return t
 
 
 def connect(**dbs):
@@ -147,6 +157,38 @@ def with_json(**fields):
             return f(*args, **kwargs)
         return wrapper
     return decorator
+
+
+class QueryGenerator:
+    def __init__(self, db, query_head):
+        self.db = db
+        self.query_head = query_head
+        self.checks = []
+        self.params = []
+        self.query_tail = None
+
+    def add_check(self, check, value, validator=lambda x: x):
+        if self.query_tail is not None:
+            raise RuntimeError
+        self.checks.append(check)
+        self.params.append(validator(value))
+
+    def finalize(self, query_tail):
+        if self.query_tail is not None:
+            raise RuntimeError
+        self.query_tail = query_tail
+
+    def execute(self):
+        if self.query_tail is None:
+            raise RuntimeError
+        cur = self.db.cursor()
+        if self.checks:
+            checks = " AND ".join(self.checks)
+            query = " ".join([self.query_head, "WHERE", checks, self.query_tail])
+            cur.execute(query, self.params)
+        else:
+            cur.execute(" ".join([self.query_head, self.query_tail]), self.params)
+        return cur
 
 
 @app.route(f"{API_PATH}/have_session")
@@ -322,36 +364,76 @@ def get_notifications(db):
     return jsonify([dict(zip(("id", "message", "action_url", "picture_url"), row)) for row in islice(cur, 10)])
 
 
-@app.route(f"{API_PATH}/ads/<int:ad_id>")
-@with_session
-@connect(db=MAIN_DB)
-def get_ad(db, ad_id):
-    columns = "photo", "title", "description", "price", "owner", "ad_type"
-    user_columns = "name", "email", "phone_number"
-    qualified_cols = [*qualify_cols("ads", columns), *qualify_cols("users", user_columns)]
+ad_columns = "id", "title", "description", "price", "owner", "ad_type"
+user_columns = "name", "email", "phone_number"
+qualified_cols = [*qualify_cols("ads", ad_columns), *qualify_cols("users", user_columns)]
+
+def make_ad_object(db, record, user_id):
+    record = dict(zip(qualified_cols, record))
+    ret = {k.removeprefix("ads."): v for k, v in record.items() if k.startswith("ads.")}
+    ret["can_edit"] = (ret["owner"] == user_id)
+    ret["owner"] = record["users.name"]
+    ret["price"] = to_cents(ret["price"])
     cur = db.cursor()
-    cur.execute(f"SELECT {cols_list(qualified_cols)} FROM ads JOIN users ON ads.owner = users.id WHERE ads.id = ?", (ad_id,))
-    result = cur.fetchone()
-    if result is None:
-        return api_error(404, "Not found")
-    result = dict(zip(qualified_cols, result))
-    ret = {k.removeprefix("ads."): v for k, v in result.items() if k.startswith("ads.")}
-    ret["can_edit"] = (ret["owner"] == session["id"])
-    ret["owner"] = result["users.name"]
     cur.execute(
             "SELECT NULL FROM ads_interested WHERE ad_id = ? AND user_id = ?",
-            (ad_id, session["id"]))
+            (ret["id"], user_id))
     if cur.fetchone() is not None:
         ret["contact_info"] = {
-            "email": result["users.email"],
-            "phone_number": result["users.phone_number"]
+            "email": record["users.email"],
+            "phone_number": record["users.phone_number"]
         }
     else:
         ret["contact_info"] = None
     return ret
 
 
-#@app.route(f"{API_PATH}/ads?bla=foo")
+@app.route(f"{API_PATH}/ads/<int:ad_id>")
+@with_session
+@connect(db=MAIN_DB)
+def get_ad(db, ad_id):
+    cur = db.cursor()
+    cur.execute(f"SELECT {cols_list(qualified_cols)} FROM ads JOIN users ON ads.owner = users.id WHERE ads.id = ?", (ad_id,))
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "Not found")
+    return make_ad_object(db, result, session["id"])
+
+
+@app.route(f"{API_PATH}/ads")
+@with_session
+@connect(db=MAIN_DB)
+def query_ads(db):
+    query = QueryGenerator(db, f"SELECT {cols_list(qualified_cols)} FROM ads JOIN users ON ads.owner = users.id")
+    checks = (
+        ("price >= ?", "min_price", validate_price),
+        ("price <= ?", "max_price", validate_price),
+        ("ad_type = ?", "ad_type", validate_ad_type),
+        ("title LIKE '%'||?||'%'", "title", str),
+        ("description LIKE '%'||?||'%'", "description", str),
+    )
+    for check, arg, validator in checks:
+        try:
+            query.add_check(check, request.args[arg], validator)
+        except ValueError:
+            return api_error(400, "Bad request")
+        except KeyError:
+            pass
+    query.finalize("ORDER BY ads.id DESC")
+    cur = query.execute()
+    page = int(request.args.get("page", 0))
+    page_size = 10
+    page_off = page_size * page
+    count = sum(1 for _ in islice(cur, page_off))
+    results = [
+        make_ad_object(db, record, session["id"])
+        for record in islice(cur, page_size)
+    ]
+    count += len(results) + sum(1 for _ in cur)
+    return {
+        "pages": -(count // -page_size),
+        "results": results
+    }
 
 
 @app.route(f"{API_PATH}/ads/<int:ad_id>", methods=["PUT"])

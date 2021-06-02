@@ -24,7 +24,7 @@ CREATE TABLE ads (
     id INTEGER PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
-    price TEXT NOT NULL,
+    price INTEGER NOT NULL,
     owner INTEGER NOT NULL REFERENCES users(id),
     ad_type TEXT NOT NULL
 );
