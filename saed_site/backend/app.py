@@ -353,11 +353,12 @@ def get_notifications(db):
         except TypeError:
             return api_error(400, "'earlier_than' should be an integer")
     if after is not None:
-        query.append("AND id > ?")
-        try:
-            args.append(int(after))
-        except TypeError:
-            return api_error(400, "'after' should be an integer")
+        query.append(f"AND id > {after}") # SQL INJECTION!
+        #query.append("AND id > ?")
+        #try:
+        #    args.append(int(after))
+        #except TypeError:
+        #    return api_error(400, "'after' should be an integer")
     query.append("ORDER BY id DESC")
     cur = db.cursor()
     cur.execute(" ".join(query), tuple(args))
