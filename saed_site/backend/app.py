@@ -488,7 +488,10 @@ def signal_interest(db, ad_id):
     try:
         cur.execute("INSERT INTO ads_interested(ad_id, user_id) VALUES (?, ?)", (ad_id, session["id"]))
     except IntegrityError:
-        pass
+        return {}
+    cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
+    (owner, title) = cur.fetchone()
+    create_notification(db, owner, f'An user is interested into your ad: "{title}"', picture_url=f"/saed/api/user_image/{session['id']}")
     return {}
 
 
