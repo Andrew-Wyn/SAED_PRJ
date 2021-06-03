@@ -15,12 +15,16 @@
                 <input type="text" id="owner" formControlName="owner">
             </p>
             <p>
-                <label for="type"><b>Tipo: </b></label>
-                <input type="text" id="type" formControlName="type">
+                <label for="ad_type"><b>Tipo: </b></label>
+                <input type="text" id="ad_type" formControlName="ad_type">
+            </p>
+            <p>
+                <label for="description"><b>Descrizione: </b></label>
+                <input type="text" id="description" formControlName="description">
             </p>
             <h3>Foto: </h3>
-            <div *ngIf="photo; else noPicture"><img id="picture-icon" [src]="photo"/></div>
-            <ng-template #noPicture><div><img id="picture-icon" src="https://freepikpsd.com/wp-content/uploads/2019/10/no-image-available-icon-png-8-Transparent-Images.png"/></div></ng-template>        
+            <img id="picture-icon" [src]="adsImageUrl + idAdModify"/>
+
             <p>
                 <input type="file" (change)="onFileChange($event)" required/>
             </p>

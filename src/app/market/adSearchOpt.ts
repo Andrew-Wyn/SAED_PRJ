@@ -3,5 +3,7 @@ export interface AdSearchOpt {
     minPrice: number | undefined;
     maxPrice: number | undefined;
     owner: string | undefined;
-    type: string | undefined;
+    ad_type: string | undefined;
+    destription: string | undefined;
+    page: number | undefined;
 }

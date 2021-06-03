@@ -7,16 +7,19 @@
                 <input type="text" id="title" formControlName="title" required>
             </p>
             <p>
+                <label for="type"><b>Descrizione: </b></label>
+                <input type="text" id="description" formControlName="description" required>
+            </p>
+            <p>
                 <label for="price"><b>Prezzo: </b></label>
                 <input type="text" id="price" formControlName="price" required>
             </p>
             <p>
                 <label for="type"><b>Tipo: </b></label>
-                <input type="text" id="type" formControlName="type" required>
+                <input type="text" id="ad_type" formControlName="ad_type" required>
             </p>
             <h3>Foto: </h3>
-            <div *ngIf="photo; else noPicture"><img id="picture-icon" [src]="photo"/></div>
-            <ng-template #noPicture><div><img id="picture-icon" src="https://freepikpsd.com/wp-content/uploads/2019/10/no-image-available-icon-png-8-Transparent-Images.png"/></div></ng-template>        
+            <img id="picture-icon" src="/assets/images/no_user_image.jpeg"/>
             <p>
                 <input type="file" (change)="onFileChange($event)" required/>
             </p>

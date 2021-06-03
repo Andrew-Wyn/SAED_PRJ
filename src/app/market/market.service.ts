@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
+import { Router, UrlSerializer } from '@angular/router';
 
 import { Ad } from './ad'
 import { AdSearchOpt } from './adSearchOpt'
@@ -18,7 +19,7 @@ export class MarketService {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };  
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router, private serializer: UrlSerializer) { }
 
   apiURL = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute;
 
@@ -51,68 +52,53 @@ export class MarketService {
     );
   }
 
-  /** GET ad by id. Will 404 if id not found */
-  getAd(id: number): Observable<Ad> {
-    const url = `${this.apiURL}${id}`;
+  getAd(id?: number): Observable<Ad> {
+    const url = `${this.apiURL}ads/${id}`;
     return this.http.get<Ad>(url).pipe(
       tap(_ => console.log(`fetched hero id=${id}`)),
       catchError(this.handleError<Ad>(`getAd id=${id}`))
     );
   }
 
-  /** PUT: update the hero on the server */
   updateAd(ad?: Ad): Observable<any> {
-    return this.http.put(`${this.apiURL}`, ad, this.httpOptions).pipe(
+    return this.http.put(`${this.apiURL}ads`, ad, this.httpOptions).pipe(
       tap(_ => console.log(`updated ad id=${ad!.id}`)),
       catchError(this.handleError<any>('updateAd'))
     );  
   }
 
-  /** POST: add a new hero to the server */
-  addAd(ad: Ad): Observable<Ad> {
+  addAd(ad: Ad): Observable<any> {
     console.log(ad);
-    return this.http.post<Ad>(`${this.apiURL}`, ad, this.httpOptions).pipe(
-      tap((ad: Ad) => console.log(`added ad w/ id=${ad.id}`)),
-      catchError(this.handleError<Ad>('addAd'))
+    return this.http.post<any>(`${this.apiURL}ads`, ad, this.httpOptions).pipe(
+      tap((ad: any) => console.log(`added ad w/ id=${ad.id}`)),
+      catchError(this.handleError<any>('addAd'))
     );
   }
 
-  /** DELETE: delete the hero from the server */
   deleteAd(id?: number): Observable<Ad> {
-    const url = `${this.apiURL}${id}`;
-
-    return this.http.delete<Ad>(url, this.httpOptions).pipe(
+    return this.http.delete<Ad>(`${this.apiURL}${id}ads`, this.httpOptions).pipe(
       tap(_ => console.log(`deleted ad id=${id}`)),
       catchError(this.handleError<Ad>('deleteAd'))
     );
   }
 
-  /* GET heroes whose name contains search term */
-  searchAds(term: AdSearchOpt): Observable<Ad[]> {
-    // add custom get string for term object
-    /*return this.http.get<Ad[]>(`${this.apiURL}?name=${term}`).pipe(
+  searchAds(terms?: AdSearchOpt): Observable<any> {
+    let tree = this.router.createUrlTree(["/"], { queryParams: terms });
+    let serializedTree = this.serializer.serialize(tree).split("/")[1]
+    console.log(`${this.apiURL}ads${serializedTree}`);
+    return this.http.get<any>(`${this.apiURL}ads${serializedTree}`).pipe(
       tap(x => x.length ?
-        console.log(`found ads matching "${term}"`) :
-        console.log(`no ads matching "${term}"`)),
-      catchError(this.handleError<Ad[]>('searchAds', []))
-    );*/
-    return of([{
-      id: 1,
-      photo: undefined,
-      title: "titolo1",
-      price: 11,
-      owner: "possessore 1",
-      can_edit: true,
-      type: "tipoA",
-    } as Ad,{
-      id: 2,
-      photo: undefined,
-      title: "titolo2",
-      price: 22,
-      owner: "possessore 2",
-      can_edit: true,
-      type: "tipoB",
-    }as Ad]);
+        console.log(`found ads matching`) :
+        console.log(`no ads matching`, x)),
+      catchError(this.handleError<any>('searchAds', []))
+    );
   }
 
+  updateAdImage(idAd?: number, imageBlob?: string | ArrayBuffer | null): Observable<any> {    
+    return this.http.put<any>(`${this.apiURL}ads/photos/${idAd}`, imageBlob)
+    .pipe(
+      tap(_ => console.log('updated user image')),
+      catchError(this.handleError<any>('updateUserImage'))
+    );
+  }
 }

@@ -6,14 +6,18 @@ import { Location } from '@angular/common';
 import { Ad } from '../ad'
 import { MarketService } from '../market.service';
 
+import * as GLOBALCONFIG from '../../global-config';
+
 @Component({
   selector: 'app-market-edit',
   templateUrl: './market-edit.component.html',
   styleUrls: ['./market-edit.component.css']
 })
 export class MarketEditComponent implements OnInit {
-
-  adModify?: Ad;
+  
+  adsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'ads/photos/';
+  idAdModify?: number;
+  imageBlob?: string | ArrayBuffer | null;
 
   valid = false;
   photo?: string | ArrayBuffer | null;
@@ -21,46 +25,32 @@ export class MarketEditComponent implements OnInit {
   adModifyForm = new FormGroup({
     title: new FormControl(undefined),
     price: new FormControl(undefined),
-    photo: new FormControl(undefined),
     owner: new FormControl(undefined),
-    type: new FormControl(undefined),
+    ad_type: new FormControl(undefined),
+    description: new FormControl(undefined)
   });
 
   constructor(private route: ActivatedRoute, private location: Location, private marketService: MarketService, private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.adModify = JSON.parse(params.get('adModifiy') as any);
-
-      if (this.adModify == undefined) {
+      this.idAdModify = JSON.parse(params.get('idAdModifiy') as any);
+      console.log(this.idAdModify);
+      if (this.idAdModify == undefined) {
         this.location.back();
       } else {
-        // to delete
-        this.adModifyForm.patchValue({
-          title: this.adModify?.title,
-          price: this.adModify?.price,
-          photo: this.adModify?.photo,
-          owner: this.adModify?.owner,
-          type: this.adModify?.type
-        });
-        this.valid = true;
-        /*this.marketService.getAd(this.adModify?.id).subscribe(
+        this.marketService.getAd(this.idAdModify).subscribe(
           ad => {
-            if (ad != this.adModify) {
-              this.location.back();
-            } else {
-              console.log(this.adModify?.id);
-              this.adModifyForm.patchValue({
-                title: this.adModify?.title,
-                price: this.adModify?.price,
-                photo: this.adModify?.photo,
-                owner: this.adModify?.owner,
-                type: this.adModify?.type
-              });
-              this.valid = true;
-            }
+            this.adModifyForm.patchValue({
+              title: ad.title,
+              price: ad.price,
+              owner: ad.owner,
+              ad_type: ad.ad_type,
+              description: ad.description
+            });
+            this.valid = true;
           }
-        );*/
+        );
       }
     });
   }
@@ -70,9 +60,28 @@ export class MarketEditComponent implements OnInit {
   }
 
   save(): void {
-    this.marketService.updateAd(this.adModifyForm.value).subscribe(() => {
-      this.goBack();
-    });
+    if (this.imageBlob != undefined) {
+      this.marketService.updateAdImage(this.idAdModify, this.imageBlob).subscribe(_ => {
+
+        this.marketService.updateAd(this.adModifyForm.value).subscribe(
+          _ => {
+            this.goBack();
+          },
+          (error) => {
+            console.log(error);
+            this.goBack();
+          });
+      });
+    } else {
+        this.marketService.updateAd(this.adModifyForm.value).subscribe(
+          _ => {
+            this.goBack();
+          },
+          (error) => {
+            console.log(error);
+            this.goBack();
+          });
+    }
   }
 
   onFileChange(event: any) {
@@ -80,16 +89,14 @@ export class MarketEditComponent implements OnInit {
    
     if(event.target.files && event.target.files.length) {
       const [file] = event.target.files;
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file);
     
       reader.onload = () => {
-        this.adModifyForm.value.photo = reader.result;
-        
+        this.imageBlob = reader.result;
+        (document.getElementById('picture-icon') as HTMLImageElement).src = URL.createObjectURL(file);
         // need to run CD since file load runs outside of zone
         this.cd.markForCheck();
       };
-    }
+    }  
   }
-
-
 }

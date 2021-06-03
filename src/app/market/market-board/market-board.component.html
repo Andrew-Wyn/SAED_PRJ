@@ -3,24 +3,28 @@
     <form [formGroup]="adSearchOpt" (ngSubmit)="search()">
         <div>
             <div>
-                <label for="title">Title: </label>
-                <input type="text" id="title" formControlName="title" placeholder="title ...">
+                <label for="title">Titolo: </label>
+                <input type="text" id="title" formControlName="title" placeholder="titolo ...">
             </div>
             <div>
                 <label for="minprice">Prezzo Minimo: </label>
-                <input type="text" id="minprice" formControlName="minPrice" placeholder="min price ...">
+                <input type="text" id="minprice" formControlName="minPrice" placeholder="prezzo massimo ...">
             </div>
             <div>
                 <label for="maxprice">Prezzo Massimo: </label>
-                <input type="text" id="maxprice" formControlName="maxPrice" placeholder="min price ...">
+                <input type="text" id="maxprice" formControlName="maxPrice" placeholder="prezzo minimo ...">
             </div>
             <div>
                 <label for="owner">Proprietario: </label>
-                <input type="text" id="owner" formControlName="owner" placeholder="owner ...">
+                <input type="text" id="owner" formControlName="owner" placeholder="roprietario ...">
             </div>
             <div>
                 <label for="type">Tipo: </label>
-                <input type="text" id="type" formControlName="type" placeholder="type ...">
+                <input type="text" id="ad_type" formControlName="ad_type" placeholder="tipo ...">
+            </div>
+            <div>
+                <label for="type">Descrizione: </label>
+                <input type="text" id="description" formControlName="description" placeholder="description ...">
             </div>
         </div>
         <button>search</button>
@@ -31,15 +35,19 @@
     <div *ngFor="let ad of ads$ | async">
         <div class="card">
             <div><h2>{{ad.title}}</h2></div>
-                <div *ngIf="ad.photo != undefined; else noPicture"><img class="photo" [src]="ad.photo"/></div>
-                <ng-template #noPicture><div><img class="photo" src="assets/images/noimage.png"/></div></ng-template>
+                <img class="photo" [src]="adsImageUrl + ad.id"/>
             <p><b>Prezzo:</b>&nbsp;{{ad.price}} &euro;</p>
             <p><b>Proprietario:</b>&nbsp;{{ad.owner}}</p>
-            <p><b>Tipo:</b>&nbsp;{{ad.type}}</p>
-            <div sngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.instrument_supplier == true && ad.can_edit">
-                <a [routerLink]="['/app/marketEdit', { adModifiy: ad  | json }]"><button>Modifica Annuncio</button></a>
+            <p><b>Descrizione:</b>&nbsp;{{ad.description}}</p>
+            <p><b>Tipo:</b>&nbsp;{{ad.ad_type}}</p>
+            <div>
+                <span sngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.instrument_supplier == true && ad.can_edit">
+                    <a [routerLink]="['/app/marketEdit', { idAdModifiy: ad.id  | json }]"><button>Modifica Annuncio</button></a>
+                    &nbsp;
+                    <button (click)="delete(ad.id)">Elimina Annuncio</button>
+                </span>
                 &nbsp;
-                <button (click)="delete(ad.id)">Elimina Annuncio</button>
+                <button (click)="addPreference(ad.id)">Aggiungi preferenza</button>
             </div>
         </div>
     </div>

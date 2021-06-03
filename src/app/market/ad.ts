@@ -1,9 +1,9 @@
 export interface Ad {
     id?: number;
-    photo?: string | ArrayBuffer | null;
     title?: string;
+    description ?: string;
     price?: number;
     owner?: string;
+    ad_type?: string;
     can_edit?: boolean;
-    type?: string;
 }

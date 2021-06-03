@@ -16,12 +16,13 @@ import { UserInfoService } from 'src/app/user-info.service';
 export class MarketPublishComponent implements OnInit {
 
   photo?: string | ArrayBuffer | null;
+  imageBlob?: string | ArrayBuffer | null;
 
   adNewForm = new FormGroup({
     title: new FormControl(undefined),
+    description: new FormControl(undefined),
     price: new FormControl(undefined),
-    photo: new FormControl(undefined),
-    type: new FormControl(undefined),
+    ad_type: new FormControl(undefined),
   });
 
   constructor(private marketService: MarketService, private location: Location, private userInfoService: UserInfoService, private cd: ChangeDetectorRef) { }
@@ -36,16 +37,27 @@ export class MarketPublishComponent implements OnInit {
   save() {
     // create Ad object to load into api
     let newAd = {
-      id: undefined,
       title: this.adNewForm.value['title'],
+      description: this.adNewForm.value['description'],
       price: this.adNewForm.value['price'],
-      photo: this.photo,
-      owner: this.userInfoService.userInfo?.name,
-      ownerId: this.userInfoService.userInfo?.id,
-      type: this.adNewForm.value['type'],  
+      owner: this.userInfoService.userInfo?.id,
+      ad_type: this.adNewForm.value['ad_type'],  
     } as Ad
-    console.log(newAd);
-    this.marketService.addAd(newAd).subscribe();
+
+    this.marketService.addAd(newAd).subscribe(
+      response => {
+        if (this.imageBlob != undefined) {
+          this.marketService.updateAdImage(response.ad_id, this.imageBlob).subscribe(_ => {
+            this.goBack();
+          });    
+        } else {
+          this.goBack();
+        }
+      },
+      (error) => {
+        console.log(error);
+        this.goBack();
+      });
   }
 
   onFileChange(event: any) {
@@ -53,16 +65,14 @@ export class MarketPublishComponent implements OnInit {
    
     if(event.target.files && event.target.files.length) {
       const [file] = event.target.files;
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file);
     
       reader.onload = () => {
-        this.photo = reader.result;
-        
+        this.imageBlob = reader.result;
+        (document.getElementById('picture-icon') as HTMLImageElement).src = URL.createObjectURL(file);
         // need to run CD since file load runs outside of zone
         this.cd.markForCheck();
       };
-    }
+    }  
   }
-  
-
 }
