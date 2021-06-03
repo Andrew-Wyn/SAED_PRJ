@@ -51,6 +51,13 @@ with open("oauth_data") as f:
 AccountType = IntEnum("AccountType", "GOOGLE") #FACEBOOK...
 
 
+def removeprefix(self: str, prefix: str, /) -> str:
+    if self.startswith(prefix):
+        return self[len(prefix):]
+    else:
+        return self[:]
+
+
 def qmarks(n):
     return ", ".join(("?",) * n)
 
@@ -371,7 +378,7 @@ qualified_cols = [*qualify_cols("ads", ad_columns), *qualify_cols("users", user_
 
 def make_ad_object(db, record, user_id):
     record = dict(zip(qualified_cols, record))
-    ret = {k.removeprefix("ads."): v for k, v in record.items() if k.startswith("ads.")}
+    ret = {removeprefix(k, "ads."): v for k, v in record.items() if k.startswith("ads.")}
     ret["can_edit"] = (ret["owner"] == user_id)
     ret["owner"] = record["users.name"]
     ret["price"] = to_cents(ret["price"])
