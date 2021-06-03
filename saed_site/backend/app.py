@@ -503,6 +503,8 @@ def signal_interest(db, ad_id):
 def revoke_interest(db, ad_id):
     cur = db.cursor()
     cur.execute("DELETE FROM ads_interested WHERE ad_id = ? AND user_id = ?", (ad_id, session["id"]))
+    if cur.rowcount:
+        create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', picture_url=f"/saed/api/user_image/{session['id']}")
     return {}
 
 
