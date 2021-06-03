@@ -218,7 +218,7 @@ def ensure_user_exists(db, img_db, account_type, email, name, given_name=None, f
         user_id = get_user_id(db, account_type, email)
         if picture_url is not None:
             cur = img_db.cursor()
-            cur.execute(f"INSERT INTO profile_pictures(user_id, external_url) VALUES (?, ?)", (user_id, picture_url))
+            cur.execute(f"INSERT INTO profile_pictures(id, external_url) VALUES (?, ?)", (user_id, picture_url))
         return user_id
 
 

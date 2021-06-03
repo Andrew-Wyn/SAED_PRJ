@@ -48,8 +48,8 @@ export class EditProfileComponent implements OnInit {
       };
     }
   }
-  
 
+  
   goBack(): void {
     this.location.back();
   }
