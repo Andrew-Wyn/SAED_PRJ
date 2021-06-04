@@ -110,6 +110,12 @@ def validate_ad_type(t):
     return t
 
 
+def str_or_null(s):
+    if s is None:
+        return None
+    return str(s)
+
+
 def connect(**dbs):
     def decorator(f):
         @wraps(f)
@@ -266,7 +272,7 @@ def get_user_info(db):
 
 @app.route(f"{API_PATH}/user_info", methods=["PUT"])
 @with_session
-@with_json(email=validate_email, **{k: lambda x: x for k in user_info_columns if k != "email"})
+@with_json(email=validate_email, name=str, given_name=str_or_null, family_name=str_or_null, musician=bool, instrument_supplier=bool, club_owner=bool)
 @connect(db=MAIN_DB)
 def set_user_info(db, json):
     cur = db.cursor()
