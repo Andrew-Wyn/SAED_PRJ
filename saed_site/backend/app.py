@@ -266,7 +266,7 @@ def get_user_info(db):
 
 @app.route(f"{API_PATH}/user_info", methods=["PUT"])
 @with_session
-@with_json(email=validate_email, **{k: str for k in user_info_columns if k != "email"})
+@with_json(email=validate_email, **{k: lambda x: x for k in user_info_columns if k != "email"})
 @connect(db=MAIN_DB)
 def set_user_info(db, json):
     cur = db.cursor()
@@ -509,6 +509,8 @@ def signal_interest(db, ad_id):
 @connect(db=MAIN_DB)
 def revoke_interest(db, ad_id):
     cur = db.cursor()
+    cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
+    (owner, title) = cur.fetchone()
     cur.execute("DELETE FROM ads_interested WHERE ad_id = ? AND user_id = ?", (ad_id, session["id"]))
     if cur.rowcount:
         create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', picture_url=f"/saed/api/user_image/{session['id']}")
