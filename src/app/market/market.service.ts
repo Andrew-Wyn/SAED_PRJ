@@ -60,8 +60,9 @@ export class MarketService {
     );
   }
 
-  updateAd(ad?: Ad): Observable<any> {
-    return this.http.put(`${this.apiURL}ads`, ad, this.httpOptions).pipe(
+  updateAd(adId?: number, ad?: Ad): Observable<any> {
+    console.log(ad);
+    return this.http.put(`${this.apiURL}ads/${adId}`, ad, this.httpOptions).pipe(
       tap(_ => console.log(`updated ad id=${ad!.id}`)),
       catchError(this.handleError<any>('updateAd'))
     );  

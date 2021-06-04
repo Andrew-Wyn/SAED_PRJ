@@ -40,7 +40,7 @@
             <p><b>Proprietario:</b>&nbsp;{{ad.owner}}</p>
             <p><b>Descrizione:</b>&nbsp;{{ad.description}}</p>
             <p><b>Tipo:</b>&nbsp;{{ad.ad_type}}</p>
-            <div class="seller-info" *ngIf="ad.contact_info != null; else noSellerInfo">
+            <div class="seller-info" *ngIf="ad.contact_info != null; else nouserinfo">
                 <h2>Informazioni sul Venditore</h2>
                 <p>
                     <span *ngIf="ad.contact_info.email"><b>Indirizzo Posta: </b>{{ad.contact_info.email}}<br><br></span>
@@ -48,15 +48,19 @@
                     <button (click)="deletePreference(ad.id)">Rimuovi preferenza</button>
                 </p>
             </div>
-            <ng-template #noSellerInfo><button (click)="addPreference(ad.id)">Aggiungi preferenza</button></ng-template>
-            <div>
-                <span *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.instrument_supplier == true && ad.can_edit">
-                    <a [routerLink]="['/app/marketEdit', { idAdModifiy: ad.id  | json }]"><button>Modifica Annuncio</button></a>
+            <ng-template #nouserinfo>
+                <div>
+                    <span *ngIf="ad.can_edit; else notmine">
+                        <a [routerLink]="['/app/marketEdit', { idAdModifiy: ad.id  | json }]"><button>Modifica Annuncio</button></a>
+                        &nbsp;
+                        <button (click)="delete(ad.id)">Elimina Annuncio</button>
+                    </span>
                     &nbsp;
-                    <button (click)="delete(ad.id)">Elimina Annuncio</button>
-                </span>
-                &nbsp;
-            </div>
+                    <ng-template #notmine>
+                        <button (click)="addPreference(ad.id)">Aggiungi preferenza</button>
+                    </ng-template>
+                </div>
+            </ng-template>
         </div>
     </div>
 </div>

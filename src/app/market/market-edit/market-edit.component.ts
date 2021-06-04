@@ -63,7 +63,7 @@ export class MarketEditComponent implements OnInit {
     if (this.imageBlob != undefined) {
       this.marketService.updateAdImage(this.idAdModify, this.imageBlob).subscribe(_ => {
 
-        this.marketService.updateAd(this.adModifyForm.value).subscribe(
+        this.marketService.updateAd(this.idAdModify, this.adModifyForm.value).subscribe(
           _ => {
             this.goBack();
           },
@@ -73,7 +73,7 @@ export class MarketEditComponent implements OnInit {
           });
       });
     } else {
-        this.marketService.updateAd(this.adModifyForm.value).subscribe(
+        this.marketService.updateAd(this.idAdModify, this.adModifyForm.value).subscribe(
           _ => {
             this.goBack();
           },
