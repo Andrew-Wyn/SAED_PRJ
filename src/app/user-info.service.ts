@@ -20,7 +20,9 @@ export class UserInfoService {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log(this.imageProfileUrl);
+  }
 
   /**
    * Handle Http operation that failed.
@@ -60,6 +62,7 @@ export class UserInfoService {
   }
 
   changeUserinfo(userInfo?: UserInfo): Observable<UserInfo | undefined> {
+    console.log("changing ", userInfo);
     return this.http.put<UserInfo>(`${this.apiURL}user_info`, userInfo, this.httpOptions).pipe(
       tap(_ => console.log(`changed user:`))
     );

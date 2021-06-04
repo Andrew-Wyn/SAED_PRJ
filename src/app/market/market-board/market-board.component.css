@@ -36,3 +36,11 @@ h2 {
     width: 100px;
     height: 100px;
 }
+
+.seller-info {
+    text-align: center;
+    border-radius: 5px;
+    background-color: rgba(255, 0, 0, 0.3);
+    border: 2px solid red;
+    margin: 5px;
+}

@@ -54,7 +54,13 @@ export class HeaderComponent implements OnInit {
       repeatWhen(() => interval(5000)),
       catchError(this.handleError<Notify[]>('getNotify', []))
     ).subscribe(
-      notifications => {this.notifications$ = notifications; console.log(this.notifications$);  }
+      notifications => {
+        this.notifications$ = notifications.map(notification => {
+          notification.picture_url = GLOBALCONFIG.backEndLocation + notification.picture_url;
+          return notification;
+        });
+        console.log(this.notifications$);  
+      }
     );
   }
 

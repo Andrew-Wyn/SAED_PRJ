@@ -32,7 +32,7 @@
 </div>
 <hr>
 <div class="objects-list">
-    <div *ngFor="let ad of ads$ | async">
+    <div *ngFor="let ad of ads$">
         <div class="card">
             <div><h2>{{ad.title}}</h2></div>
                 <img class="photo" [src]="adsImageUrl + ad.id"/>
@@ -40,14 +40,22 @@
             <p><b>Proprietario:</b>&nbsp;{{ad.owner}}</p>
             <p><b>Descrizione:</b>&nbsp;{{ad.description}}</p>
             <p><b>Tipo:</b>&nbsp;{{ad.ad_type}}</p>
+            <div class="seller-info" *ngIf="ad.contact_info != null; else noSellerInfo">
+                <h2>Informazioni sul Venditore</h2>
+                <p>
+                    <span *ngIf="ad.contact_info.email"><b>Indirizzo Posta: </b>{{ad.contact_info.email}}<br><br></span>
+                    <span *ngIf="ad.contact_info.phone_number"><b>Numero di Telefono: </b>{{ad.contact_info.phone_number}}<br><br></span>
+                    <button (click)="deletePreference(ad.id)">Rimuovi preferenza</button>
+                </p>
+            </div>
+            <ng-template #noSellerInfo><button (click)="addPreference(ad.id)">Aggiungi preferenza</button></ng-template>
             <div>
-                <span sngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.instrument_supplier == true && ad.can_edit">
+                <span *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.instrument_supplier == true && ad.can_edit">
                     <a [routerLink]="['/app/marketEdit', { idAdModifiy: ad.id  | json }]"><button>Modifica Annuncio</button></a>
                     &nbsp;
                     <button (click)="delete(ad.id)">Elimina Annuncio</button>
                 </span>
                 &nbsp;
-                <button (click)="addPreference(ad.id)">Aggiungi preferenza</button>
             </div>
         </div>
     </div>

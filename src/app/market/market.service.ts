@@ -76,13 +76,21 @@ export class MarketService {
   }
 
   deleteAd(id?: number): Observable<Ad> {
-    return this.http.delete<Ad>(`${this.apiURL}${id}ads`, this.httpOptions).pipe(
+    return this.http.delete<Ad>(`${this.apiURL}ads/${id}`, this.httpOptions).pipe(
       tap(_ => console.log(`deleted ad id=${id}`)),
       catchError(this.handleError<Ad>('deleteAd'))
     );
   }
 
   searchAds(terms?: AdSearchOpt): Observable<any> {
+
+    // set null attributes of AdSearchOpt for those that is "", can raise error in be
+    Object.keys(terms as any).map(function(key, _) {
+      if ((terms as any)[key] == "") {
+        (terms as any)[key] = null;
+      }
+    });
+
     let tree = this.router.createUrlTree(["/"], { queryParams: terms });
     let serializedTree = this.serializer.serialize(tree).split("/")[1]
     console.log(`${this.apiURL}ads${serializedTree}`);
@@ -99,6 +107,20 @@ export class MarketService {
     .pipe(
       tap(_ => console.log('updated user image')),
       catchError(this.handleError<any>('updateUserImage'))
+    );
+  }
+
+  addPreference(idAd?: number): Observable<any> {
+    return this.http.post<any>(`${this.apiURL}ads/interested/${idAd}`, this.httpOptions).pipe(
+      tap(_ => console.log(`deleted ad interested id=${idAd}`)),
+      catchError(this.handleError<Ad>('deletePreference'))
+    );
+  }
+
+  deletePreference(idAd?: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiURL}ads/interested/${idAd}`, this.httpOptions).pipe(
+      tap(_ => console.log(`deleted ad interested id=${idAd}`)),
+      catchError(this.handleError<Ad>('deletePreference'))
     );
   }
 }

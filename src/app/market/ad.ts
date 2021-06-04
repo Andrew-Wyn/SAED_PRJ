@@ -6,4 +6,5 @@ export interface Ad {
     owner?: string;
     ad_type?: string;
     can_edit?: boolean;
+    contact_info?: any;
 }

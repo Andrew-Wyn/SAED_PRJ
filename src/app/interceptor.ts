@@ -13,9 +13,9 @@ export class HttpRequestInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler):
     Observable<HttpEvent<any>> {
     let intercepted = req.url.split('/').slice(3, 5).join('/')
-    console.log("interceptor: " + intercepted + "/");
+    console.log("interceptor: " + "/" + intercepted + "/");
     console.log("what i look for " + GLOBALCONFIG.backEndRoute)
-    if (intercepted + "/" == GLOBALCONFIG.backEndRoute) {
+    if ("/" + intercepted + "/" == GLOBALCONFIG.backEndRoute) {
       req = req.clone({
           withCredentials: true,
       });
