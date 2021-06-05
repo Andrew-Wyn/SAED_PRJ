@@ -6,7 +6,7 @@ from enum import IntEnum
 from pathlib import Path
 from functools import wraps
 from itertools import islice
-from contextlib import closing, ExitStack
+from contextlib import closing, ExitStack, contextmanager
 from sqlite3 import IntegrityError
 
 import flask
@@ -119,16 +119,36 @@ def str_or_null(s):
     return str(s)
 
 
+@contextmanager
+def binding(f, variable, value):
+    try:
+        old_value = f.__globals__[variable]
+    except KeyError:
+        shadowing = False
+    else:
+        shadowing = True
+
+    f.__globals__[variable] = value
+
+    try:
+        yield
+    finally:
+        if shadowing:
+            f.__globals__[variable] = old_value
+        else:
+            del f.__globals__[variable]
+
+
 def connect(**dbs):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             with ExitStack() as stack:
-                for arg_name, db_path in dbs.items():
+                for variable, db_path in dbs.items():
                     conn = sqlite3.connect(db_path)
-                    kwargs[arg_name] = conn
                     stack.enter_context(closing(conn))
                     stack.enter_context(conn)
+                    stack.enter_context(binding(f, variable, conn))
                 return f(*args, **kwargs)
         return wrapper
     return decorator
@@ -226,7 +246,7 @@ def get_or_create_user(db, img_db, account_type, email, name, given_name=None, f
 @app.route(f"{API_PATH}/session", methods=["PUT"])
 @with_json(token=str)
 @connect(db=MAIN_DB, img_db=IMG_DB)
-def configure_session(db, img_db, json):
+def configure_session(json):
     credentials = Credentials(json.token, client_id=google_client_id, client_secret=google_client_secret, scopes=google_scopes)
     oauth2 = build("oauth2", "v2", credentials=credentials)
 
@@ -261,7 +281,7 @@ def logged_out():
 @app.route(f"{API_PATH}/user_info")
 @with_session
 @connect(db=MAIN_DB)
-def get_user_info(db):
+def get_user_info():
     cur = db.cursor()
     cur.execute(f"SELECT {cols_list(user_info_columns)} FROM users WHERE id = ?", (session["id"],))
     result = cur.fetchone()
@@ -272,7 +292,7 @@ def get_user_info(db):
 @with_session
 @with_json(email=validate_email, name=str, given_name=str_or_null, family_name=str_or_null, musician=bool, instrument_supplier=bool, club_owner=bool)
 @connect(db=MAIN_DB)
-def set_user_info(db, json):
+def set_user_info(json):
     cur = db.cursor()
     try:
         cur.execute(
@@ -320,21 +340,21 @@ def set_image(img_db, with_external_url, table, id_value, max_size):
 
 @app.route(f"{API_PATH}/user_image/<int:user_id>")
 @connect(img_db=IMG_DB)
-def get_any_user_image(img_db, user_id):
+def get_any_user_image(user_id):
     return get_image(img_db, True, "profile_pictures", user_id)
 
 
 @app.route(f"{API_PATH}/user_image")
 @with_session
 @connect(img_db=IMG_DB)
-def get_user_image(img_db):
+def get_user_image():
     return get_image(img_db, True, "profile_pictures", session["id"])
 
 
 @app.route(f"{API_PATH}/user_image", methods=["PUT"])
 @with_session
 @connect(img_db=IMG_DB)
-def set_user_image(img_db):
+def set_user_image():
     return set_image(img_db, True, "profile_pictures", session["id"], 2*MB)
 
 
@@ -352,7 +372,7 @@ def is_ad_owner(db, user_id, ad_id):
 @app.route(f"{API_PATH}/notifications")
 @with_session
 @connect(db=MAIN_DB)
-def get_notifications(db):
+def get_notifications():
     earlier_than = request.args.get("earlier_than", None)
     after = request.args.get("after", None)
     query = ["SELECT id, message, action_url, picture_url FROM notifications WHERE user_id = ?"]
@@ -403,7 +423,7 @@ def make_ad_object(db, record, user_id):
 @app.route(f"{API_PATH}/ads/<int:ad_id>")
 @with_session
 @connect(db=MAIN_DB)
-def get_ad(db, ad_id):
+def get_ad(ad_id):
     cur = db.cursor()
     cur.execute(f"SELECT {cols_list(qualified_cols)} FROM ads JOIN users ON ads.owner = users.id WHERE ads.id = ?", (ad_id,))
     result = cur.fetchone()
@@ -415,7 +435,7 @@ def get_ad(db, ad_id):
 @app.route(f"{API_PATH}/ads")
 @with_session
 @connect(db=MAIN_DB)
-def query_ads(db):
+def query_ads():
     query = QueryGenerator(db, f"SELECT {cols_list(qualified_cols)} FROM ads JOIN users ON ads.owner = users.id")
     checks = (
         ("price >= ?", "min_price", validate_price),
@@ -452,7 +472,7 @@ def query_ads(db):
 @with_session
 @with_json(title=str, description=str, price=validate_price, ad_type=ad_types)
 @connect(db=MAIN_DB)
-def update_ad(db, json, ad_id):
+def update_ad(json, ad_id):
     columns = "title", "description", "price", "ad_type"
     cur = db.cursor()
     cur.execute(
@@ -467,7 +487,7 @@ def update_ad(db, json, ad_id):
 @with_session
 @with_json(title=str, description=str, price=validate_price, ad_type=ad_types)
 @connect(db=MAIN_DB)
-def add_ad(db, json):
+def add_ad(json):
     cur = db.cursor()
     cur.execute(
             f"INSERT INTO ads(title, description, price, owner, ad_type) VALUES ({qmarks(5)})",
@@ -478,14 +498,14 @@ def add_ad(db, json):
 @app.route(f"{API_PATH}/ads/photos/<int:ad_id>")
 @with_session
 @connect(img_db=IMG_DB)
-def get_ad_image(img_db, ad_id):
+def get_ad_image(ad_id):
     return get_image(img_db, False, "ad_images", ad_id)
 
 
 @app.route(f"{API_PATH}/ads/photos/<int:ad_id>", methods=["PUT"])
 @with_session
 @connect(db=MAIN_DB, img_db=IMG_DB)
-def set_ad_image(db, img_db, ad_id):
+def set_ad_image(ad_id):
     if not is_ad_owner(db, session["id"], ad_id):
         return api_error(401, "Unauthorized")
     return set_image(img_db, False, "ad_images", ad_id, 4*MB)
@@ -494,7 +514,7 @@ def set_ad_image(db, img_db, ad_id):
 @app.route(f"{API_PATH}/ads/interested/<int:ad_id>", methods=["POST"])
 @with_session
 @connect(db=MAIN_DB)
-def signal_interest(db, ad_id):
+def signal_interest(ad_id):
     cur = db.cursor()
     cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
     (owner, title) = cur.fetchone()
@@ -511,7 +531,7 @@ def signal_interest(db, ad_id):
 @app.route(f"{API_PATH}/ads/interested/<int:ad_id>", methods=["DELETE"])
 @with_session
 @connect(db=MAIN_DB)
-def revoke_interest(db, ad_id):
+def revoke_interest(ad_id):
     cur = db.cursor()
     cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
     (owner, title) = cur.fetchone()
