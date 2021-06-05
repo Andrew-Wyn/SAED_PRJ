@@ -57,6 +57,10 @@ def removeprefix(s, prefix):
     return s
 
 
+def iceil(n, d):
+    return -(n // -d)
+
+
 def qmarks(n):
     return ", ".join(("?",) * n)
 
@@ -439,7 +443,7 @@ def query_ads(db):
     ]
     count += len(results) + sum(1 for _ in cur)
     return {
-        "pages": -(count // -page_size),
+        "pages": iceil(count, page_size),
         "results": results
     }
 
