@@ -51,6 +51,10 @@ with open("oauth_data") as f:
 AccountType = IntEnum("AccountType", "GOOGLE") #FACEBOOK...
 
 
+def identity(x):
+    return x
+
+
 def removeprefix(s, prefix):
     if s.startswith(prefix):
         return s[len(prefix):]
@@ -59,6 +63,10 @@ def removeprefix(s, prefix):
 
 def iceil(n, d):
     return -(n // -d)
+
+
+def api_error(code, msg):
+    return {"error": msg}, code
 
 
 def qmarks(n):
@@ -77,46 +85,36 @@ def cols_list(columns):
     return ",".join(columns)
 
 
-def api_error(code, msg):
-    return {"error": msg}, code
+class QueryGenerator:
+    def __init__(self, db, query_head):
+        self.db = db
+        self.query_head = query_head
+        self.checks = []
+        self.params = []
+        self.query_tail = None
 
+    def add_check(self, check, value, validator=identity):
+        if self.query_tail is not None:
+            raise RuntimeError
+        self.checks.append(check)
+        self.params.append(validator(value))
 
-price_re = re.compile(r"(?P<units>\d+)(\.(?P<cents>\d\d))?")
+    def finalize(self, query_tail):
+        if self.query_tail is not None:
+            raise RuntimeError
+        self.query_tail = query_tail
 
-def validate_price(s):
-    m = price_re.fullmatch(s)
-    if not m:
-        raise ValueError
-    price = int(m.group("units"))*100
-    if m.group("cents"):
-        price += int(m.group("cents"))
-    return price
-
-
-def to_cents(n):
-    q, r = divmod(n, 100)
-    return f"{q}.{r:02}"
-
-
-# RFC 5322
-email_re = re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")
-
-def validate_email(s):
-    if not email_re.fullmatch(s):
-        raise ValueError
-    return s
-
-
-def validate_ad_type(t):
-    if t not in ad_types:
-        raise ValueError
-    return t
-
-
-def str_or_null(s):
-    if s is None:
-        return None
-    return str(s)
+    def execute(self):
+        if self.query_tail is None:
+            raise RuntimeError
+        cur = self.db.cursor()
+        if self.checks:
+            checks = " AND ".join(self.checks)
+            query = " ".join([self.query_head, "WHERE", checks, self.query_tail])
+            cur.execute(query, self.params)
+        else:
+            cur.execute(" ".join([self.query_head, self.query_tail]), self.params)
+        return cur
 
 
 @contextmanager
@@ -174,6 +172,56 @@ def with_session(f):
     return wrapper
 
 
+price_re = re.compile(r"(?P<units>\d+)(\.(?P<cents>\d\d))?")
+
+def parse_price(s):
+    m = price_re.fullmatch(s)
+    if not m:
+        raise ValueError
+    price = int(m.group("units"))*100
+    if m.group("cents"):
+        price += int(m.group("cents"))
+    return price
+
+
+def price_str(n):
+    q, r = divmod(n, 100)
+    return f"{q}.{r:02}"
+
+
+# RFC 5322
+email_re = re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")
+
+def validate_email(s):
+    if not email_re.fullmatch(s):
+        raise ValueError
+    return s
+
+
+def is_a(t):
+    def is_a_validator(value):
+        if not isinstance(value, t):
+            raise TypeError
+        return value
+    return is_a_validator
+
+
+def is_in(container):
+    def is_in_validator(value):
+        if not value in container:
+            raise ValueError
+        return value
+    return is_in_validator
+
+
+def nullable(validator):
+    def nullable_validator(value):
+        if value is None:
+            return None
+        return validator(value)
+    return nullable_validator
+
+
 class Namespace:
     pass
 
@@ -191,51 +239,14 @@ def with_json(**fields):
                     value = request.json[fieldname]
                 except KeyError:
                     return bad_request
-                if callable(validator):
-                    try:
-                        setattr(ns, fieldname, validator(value))
-                    except ValueError:
-                        return bad_request
-                else:
-                    if value not in validator:
-                        return bad_request
-                    setattr(ns, fieldname, value)
-            kwargs["json"] = ns
-            return f(*args, **kwargs)
+                try:
+                    setattr(ns, fieldname, validator(value))
+                except (ValueError, TypeError):
+                    return bad_request
+            with bindings(f, json=ns):
+                return f(*args, **kwargs)
         return wrapper
     return decorator
-
-
-class QueryGenerator:
-    def __init__(self, db, query_head):
-        self.db = db
-        self.query_head = query_head
-        self.checks = []
-        self.params = []
-        self.query_tail = None
-
-    def add_check(self, check, value, validator=lambda x: x):
-        if self.query_tail is not None:
-            raise RuntimeError
-        self.checks.append(check)
-        self.params.append(validator(value))
-
-    def finalize(self, query_tail):
-        if self.query_tail is not None:
-            raise RuntimeError
-        self.query_tail = query_tail
-
-    def execute(self):
-        if self.query_tail is None:
-            raise RuntimeError
-        cur = self.db.cursor()
-        if self.checks:
-            checks = " AND ".join(self.checks)
-            query = " ".join([self.query_head, "WHERE", checks, self.query_tail])
-            cur.execute(query, self.params)
-        else:
-            cur.execute(" ".join([self.query_head, self.query_tail]), self.params)
-        return cur
 
 
 def get_or_create_user(db, img_db, account_type, email, name, given_name=None, family_name=None, picture_url=None):
@@ -255,9 +266,9 @@ def get_or_create_user(db, img_db, account_type, email, name, given_name=None, f
 
 
 @app.route(f"{API_PATH}/session", methods=["PUT"])
-@with_json(token=str)
+@with_json(token=is_a(str))
 @connect(db=MAIN_DB, img_db=IMG_DB)
-def configure_session(json):
+def configure_session():
     credentials = Credentials(json.token, client_id=google_client_id, client_secret=google_client_secret, scopes=google_scopes)
     oauth2 = build("oauth2", "v2", credentials=credentials)
 
@@ -301,9 +312,16 @@ def get_user_info():
 
 @app.route(f"{API_PATH}/user_info", methods=["PUT"])
 @with_session
-@with_json(email=validate_email, name=str, given_name=str_or_null, family_name=str_or_null, musician=bool, instrument_supplier=bool, club_owner=bool)
+@with_json(
+        email=validate_email,
+        name=is_a(str),
+        given_name=nullable(is_a(str)),
+        family_name=nullable(is_a(str)),
+        musician=is_a(bool),
+        instrument_supplier=is_a(bool),
+        club_owner=is_a(bool))
 @connect(db=MAIN_DB)
-def set_user_info(json):
+def set_user_info():
     cur = db.cursor()
     try:
         cur.execute(
@@ -416,7 +434,7 @@ def make_ad_object(db, record, user_id):
     ret = {removeprefix(k, "ads."): v for k, v in record.items() if k.startswith("ads.")}
     ret["can_edit"] = (ret["owner"] == user_id)
     ret["owner"] = record["users.name"]
-    ret["price"] = to_cents(ret["price"])
+    ret["price"] = price_str(ret["price"])
     cur = db.cursor()
     cur.execute(
             "SELECT NULL FROM ads_interested WHERE ad_id = ? AND user_id = ?",
@@ -449,11 +467,11 @@ def get_ad(ad_id):
 def query_ads():
     query = QueryGenerator(db, f"SELECT {cols_list(qualified_cols)} FROM ads JOIN users ON ads.owner = users.id")
     checks = (
-        ("price >= ?", "min_price", validate_price),
-        ("price <= ?", "max_price", validate_price),
-        ("ad_type = ?", "ad_type", validate_ad_type),
-        ("title LIKE '%'||?||'%'", "title", str),
-        ("description LIKE '%'||?||'%'", "description", str),
+        ("price >= ?", "min_price", parse_price),
+        ("price <= ?", "max_price", parse_price),
+        ("ad_type = ?", "ad_type", is_in(ad_types)),
+        ("title LIKE '%'||?||'%'", "title", identity),
+        ("description LIKE '%'||?||'%'", "description", identity),
     )
     for check, arg, validator in checks:
         try:
@@ -481,9 +499,9 @@ def query_ads():
 
 @app.route(f"{API_PATH}/ads/<int:ad_id>", methods=["PUT"])
 @with_session
-@with_json(title=str, description=str, price=validate_price, ad_type=ad_types)
+@with_json(title=is_a(str), description=is_a(str), price=parse_price, ad_type=is_in(ad_types))
 @connect(db=MAIN_DB)
-def update_ad(json, ad_id):
+def update_ad(ad_id):
     columns = "title", "description", "price", "ad_type"
     cur = db.cursor()
     cur.execute(
@@ -496,9 +514,9 @@ def update_ad(json, ad_id):
 
 @app.route(f"{API_PATH}/ads", methods=["POST"])
 @with_session
-@with_json(title=str, description=str, price=validate_price, ad_type=ad_types)
+@with_json(title=is_a(str), description=is_a(str), price=parse_price, ad_type=is_in(ad_types))
 @connect(db=MAIN_DB)
-def add_ad(json):
+def add_ad():
     cur = db.cursor()
     cur.execute(
             f"INSERT INTO ads(title, description, price, owner, ad_type) VALUES ({qmarks(5)})",
