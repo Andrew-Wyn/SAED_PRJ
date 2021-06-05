@@ -204,48 +204,27 @@ class QueryGenerator:
         return cur
 
 
-@app.route(f"{API_PATH}/have_session")
-def logged_in():
-    if "id" in session:
-        return {"have_session": True}
-    else:
-        return {"have_session": False}
-
-
-@app.route(f"{API_PATH}/remove_session")
-def logged_out():
-    if "id" in session:
-        del session["id"]
-    return {}
-
-def get_user_id(db, account_type, email):
+def get_or_create_user(db, img_db, account_type, email, name, given_name=None, family_name=None, picture_url=None):
     cur = db.cursor()
     cur.execute("SELECT id FROM users WHERE account_type = ? AND email = ?", (account_type, email))
     record = cur.fetchone()
-    if record is None:
-        raise KeyError
-    return record[0]
+    if record is not None:
+        return record[0]
+    cur.execute(
+            f"INSERT INTO users(account_type, email, name, given_name, family_name, musician, instrument_supplier, club_owner) VALUES ({qmarks(8)})",
+            (account_type, email, name, given_name, family_name, False, False, False))
+    user_id = cur.lastrowid
+    if picture_url is not None:
+        cur = img_db.cursor()
+        cur.execute(f"INSERT INTO profile_pictures(id, external_url) VALUES (?, ?)", (user_id, picture_url))
+    return user_id
 
 
-def ensure_user_exists(db, img_db, account_type, email, name, given_name=None, family_name=None, picture_url=None):
-    try:
-        return get_user_id(db, account_type, email)
-    except KeyError:
-        cur = db.cursor()
-        cur.execute(f"INSERT INTO users(account_type, email, name, given_name, family_name, musician, instrument_supplier, club_owner) VALUES ({qmarks(8)})",
-                (account_type, email, name, given_name, family_name, False, False, False))
-        user_id = get_user_id(db, account_type, email)
-        if picture_url is not None:
-            cur = img_db.cursor()
-            cur.execute(f"INSERT INTO profile_pictures(id, external_url) VALUES (?, ?)", (user_id, picture_url))
-        return user_id
-
-
-@app.route(f"{API_PATH}/configure_session", methods=["POST"])
-@with_json(auth_token=str)
+@app.route(f"{API_PATH}/session", methods=["PUT"])
+@with_json(token=str)
 @connect(db=MAIN_DB, img_db=IMG_DB)
 def configure_session(db, img_db, json):
-    credentials = Credentials(json.auth_token, client_id=google_client_id, client_secret=google_client_secret, scopes=google_scopes)
+    credentials = Credentials(json.token, client_id=google_client_id, client_secret=google_client_secret, scopes=google_scopes)
     oauth2 = build("oauth2", "v2", credentials=credentials)
 
     try:
@@ -253,9 +232,8 @@ def configure_session(db, img_db, json):
     except RefreshError:
         return api_error(401, "Token scaduto")
 
-    session["id"] = ensure_user_exists(
-            db,
-            img_db,
+    session["id"] = get_or_create_user(
+            db, img_db,
             AccountType.GOOGLE,
             userinfo["email"],
             userinfo["name"],
@@ -263,6 +241,17 @@ def configure_session(db, img_db, json):
             userinfo["family_name"],
             userinfo["picture"])
 
+    return {}
+
+
+@app.route(f"{API_PATH}/session")
+def logged_in():
+    return {"user_id": session.get("id", None)}
+
+
+@app.route(f"{API_PATH}/session", methods=["DELETE"])
+def logged_out():
+    session.pop("id", None)
     return {}
 
 
