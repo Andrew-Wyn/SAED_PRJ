@@ -139,6 +139,14 @@ def binding(f, variable, value):
             del f.__globals__[variable]
 
 
+@contextmanager
+def bindings(f, **bindings):
+    with ExitStack() as stack:
+        for variable, value in bindings.items():
+            stack.enter_context(binding(f, variable, value))
+        yield
+
+
 def connect(**dbs):
     def decorator(f):
         @wraps(f)
@@ -157,9 +165,12 @@ def connect(**dbs):
 def with_session(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if "id" not in session:
+        try:
+            user_id = session["id"]
+        except KeyError:
             return api_error(401, "Unauthorized")
-        return f(*args, **kwargs)
+        with bindings(f, user_id=user_id):
+            return f(*args, **kwargs)
     return wrapper
 
 
@@ -283,7 +294,7 @@ def logged_out():
 @connect(db=MAIN_DB)
 def get_user_info():
     cur = db.cursor()
-    cur.execute(f"SELECT {cols_list(user_info_columns)} FROM users WHERE id = ?", (session["id"],))
+    cur.execute(f"SELECT {cols_list(user_info_columns)} FROM users WHERE id = ?", (user_id,))
     result = cur.fetchone()
     return dict(zip(user_info_columns, result))
 
@@ -297,7 +308,7 @@ def set_user_info(json):
     try:
         cur.execute(
                 f"UPDATE users SET {updlist(user_info_columns)} WHERE id = ?",
-                (*(getattr(json, c) for c in user_info_columns), session["id"]))
+                (*(getattr(json, c) for c in user_info_columns), user_id))
     except KeyError:
         return api_error(400, "Bad request")
     return {}
@@ -348,14 +359,14 @@ def get_any_user_image(user_id):
 @with_session
 @connect(img_db=IMG_DB)
 def get_user_image():
-    return get_image(img_db, True, "profile_pictures", session["id"])
+    return get_image(img_db, True, "profile_pictures", user_id)
 
 
 @app.route(f"{API_PATH}/user_image", methods=["PUT"])
 @with_session
 @connect(img_db=IMG_DB)
 def set_user_image():
-    return set_image(img_db, True, "profile_pictures", session["id"], 2*MB)
+    return set_image(img_db, True, "profile_pictures", user_id, 2*MB)
 
 
 def create_notification(db, user_id, message, action_url=None, picture_url=None):
@@ -376,7 +387,7 @@ def get_notifications():
     earlier_than = request.args.get("earlier_than", None)
     after = request.args.get("after", None)
     query = ["SELECT id, message, action_url, picture_url FROM notifications WHERE user_id = ?"]
-    args = [session["id"]]
+    args = [user_id]
     if earlier_than is not None:
         query.append("AND id < ?")
         try:
@@ -429,7 +440,7 @@ def get_ad(ad_id):
     result = cur.fetchone()
     if result is None:
         return api_error(404, "Not found")
-    return make_ad_object(db, result, session["id"])
+    return make_ad_object(db, result, user_id)
 
 
 @app.route(f"{API_PATH}/ads")
@@ -458,7 +469,7 @@ def query_ads():
     page_off = page_size * page
     count = sum(1 for _ in islice(cur, page_off))
     results = [
-        make_ad_object(db, record, session["id"])
+        make_ad_object(db, record, user_id)
         for record in islice(cur, page_size)
     ]
     count += len(results) + sum(1 for _ in cur)
@@ -477,7 +488,7 @@ def update_ad(json, ad_id):
     cur = db.cursor()
     cur.execute(
             f"UPDATE ads SET {updlist(columns)} WHERE id = ? AND owner = ?",
-            (json.title, json.description, json.price, json.ad_type, ad_id, session["id"]))
+            (json.title, json.description, json.price, json.ad_type, ad_id, user_id))
     if not cur.rowcount:
         return api_error(401, "Unauthorized")
     return {}
@@ -491,7 +502,7 @@ def add_ad(json):
     cur = db.cursor()
     cur.execute(
             f"INSERT INTO ads(title, description, price, owner, ad_type) VALUES ({qmarks(5)})",
-            (json.title, json.description, json.price, session["id"], json.ad_type))
+            (json.title, json.description, json.price, user_id, json.ad_type))
     return {"ad_id": cur.lastrowid}
 
 
@@ -506,7 +517,7 @@ def get_ad_image(ad_id):
 @with_session
 @connect(db=MAIN_DB, img_db=IMG_DB)
 def set_ad_image(ad_id):
-    if not is_ad_owner(db, session["id"], ad_id):
+    if not is_ad_owner(db, user_id, ad_id):
         return api_error(401, "Unauthorized")
     return set_image(img_db, False, "ad_images", ad_id, 4*MB)
 
@@ -518,13 +529,13 @@ def signal_interest(ad_id):
     cur = db.cursor()
     cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
     (owner, title) = cur.fetchone()
-    if owner == session["id"]:
+    if owner == user_id:
         return api_error(418, "I'm a teapot")
     try:
-        cur.execute("INSERT INTO ads_interested(ad_id, user_id) VALUES (?, ?)", (ad_id, session["id"]))
+        cur.execute("INSERT INTO ads_interested(ad_id, user_id) VALUES (?, ?)", (ad_id, user_id))
     except IntegrityError:
         return {}
-    create_notification(db, owner, f'An user is interested into your ad: "{title}"', picture_url=f"/saed/api/user_image/{session['id']}")
+    create_notification(db, owner, f'An user is interested into your ad: "{title}"', picture_url=f"/saed/api/user_image/{user_id}")
     return {}
 
 
@@ -535,9 +546,9 @@ def revoke_interest(ad_id):
     cur = db.cursor()
     cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
     (owner, title) = cur.fetchone()
-    cur.execute("DELETE FROM ads_interested WHERE ad_id = ? AND user_id = ?", (ad_id, session["id"]))
+    cur.execute("DELETE FROM ads_interested WHERE ad_id = ? AND user_id = ?", (ad_id, user_id))
     if cur.rowcount:
-        create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', picture_url=f"/saed/api/user_image/{session['id']}")
+        create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', picture_url=f"/saed/api/user_image/{user_id}")
     return {}
 
 
