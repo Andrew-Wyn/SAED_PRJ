@@ -307,7 +307,10 @@ def get_user_info():
     cur = db.cursor()
     cur.execute(f"SELECT {cols_list(user_info_columns)} FROM users WHERE id = ?", (user_id,))
     result = cur.fetchone()
-    return dict(zip(user_info_columns, result))
+    ret = dict(zip(user_info_columns, result))
+    for k in "musician", "instrument_supplier", "club_owner":
+        ret[k] = bool(ret[k])
+    return ret
 
 
 @app.route(f"{API_PATH}/user_info", methods=["PUT"])
