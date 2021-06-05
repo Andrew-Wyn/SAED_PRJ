@@ -3,6 +3,7 @@ import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, UrlTr
 import { Observable } from 'rxjs';
 
 import { AuthService } from './auth.service'
+import { UserInfoService } from './user-info.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ import { AuthService } from './auth.service'
 export class AuthGuard implements CanActivate {
 
   constructor(private authService: AuthService,
+              private userInfoService: UserInfoService,
               private router: Router) {}
 
   canActivate(
@@ -20,14 +22,21 @@ export class AuthGuard implements CanActivate {
       return this.checkLogin(url);
   }
   
-  checkLogin(url: string): true|UrlTree {
-    if (this.authService.hasValidAccessToken) { return true; }
-
-    // Store the attempted URL for redirecting
-    this.authService.redirectUrl = url;
-
-    // Redirect to the login page
-    return this.router.parseUrl('/login');
+  checkLogin(url: string): Promise<true|UrlTree> {
+    return new Promise((resolve) => {
+      this.authService.isLoggedInSession().subscribe(resp => {
+        if (resp.have_session) {
+          this.userInfoService.setUserInfo()
+          resolve(true);
+        } else {
+          // necessario quando vengo rimbalzato dal sistema di oauth
+          if (this.authService.hasValidAccessToken) {
+            resolve(true);
+          } else {
+            resolve(this.router.parseUrl('/login'));
+          }
+        }
+      });
+    });
   }
-
 }

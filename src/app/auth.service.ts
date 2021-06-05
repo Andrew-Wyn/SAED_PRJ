@@ -54,49 +54,21 @@ export class AuthService {
     private http: HttpClient
   ) {
     this.redirectUrl = "";
-    if (this.hasValidAccessToken) {
-      // chiamare endpoint /api/get_user_info
-      // mettere un cockie di sessione per user info o richiamare ?
-      //this.userInfoService.setUserInfo();
-    }
   }
 
   private configureSession() {
-    if (this.sessionConfigured)
-      return
     this.http.post<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}configure_session`, {auth_token:this.oauthService.getAccessToken()} as any, this.httpOptions)
     .pipe(
       tap(_ => console.log('configured session')),
       catchError(this.handleError<any>('configureSession'))
     ).subscribe(_ => this.userInfoService.setUserInfo());
-    this.sessionConfigured = true;
   }
   
   initConfig() {
     if (sessionStorage.getItem('oauthType') == 'google') {
-
       this.oauthGoogleConfig();
-      /*
-        controllo per evitare di configurare google qual'ora
-        si è settata la chiave di sessione ma non si è richiesto il token
-        in tal caso si deve eliminare la scelta precedente (cookie google)
-        e settare la configurazione di login personale, se invece abbiamo anche un
-        token allora in tal caso significa che siamo nel flusso di google e dobbiamo
-        lasciare caricata la configurazione di google.
-        Per vedere se il token google è valido dobbiamo prima caricare la configurazione relativa.
-      */
-      if (this.oauthService.hasValidAccessToken()) {
-        console.log("google");
-        this.configureSession();
-        return;
-      }
-      sessionStorage.removeItem('oauthType');
-    }
-    this.oauthPasswordFlowConfig();
-    if (this.oauthService.hasValidAccessToken()) {
-      console.log("personal");
-      this.configureSession();
-      return;
+    } else { // another type of loggin done or default (personal)
+      this.oauthPasswordFlowConfig();
     }
   }
 
@@ -105,10 +77,8 @@ export class AuthService {
     this.oauthService.setupAutomaticSilentRefresh();
     this.oauthService.tryLogin({
       onTokenReceived: context => {
-        // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
         this.configureSession();
-        //this.userInfoService.setUserInfo();
       }
     });
   }
@@ -135,7 +105,7 @@ export class AuthService {
     return this.oauthService.hasValidAccessToken();
   }
 
-  loginPersonal(uName: string, password: string) { // la logica di autenticazione va qua
+  loginPersonal(uName: string, password: string) {
     console.log(uName);
     console.log(password);
     this.oauthService
@@ -166,8 +136,17 @@ export class AuthService {
   logout(): void {
     this.oauthService.logOut();
     sessionStorage.removeItem('oauthType');
-    this.initConfig();
-    this.router.navigate(['/login']);
+    this.logOutSession().subscribe(_ => {
+      this.router.navigate(['/login']);
+    });
+  }
+
+  logOutSession() {
+    return this.http.get<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}remove_session`, this.httpOptions);
+  }
+
+  isLoggedInSession() {
+    return this.http.get<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}have_session`, this.httpOptions);
   }
 
 }

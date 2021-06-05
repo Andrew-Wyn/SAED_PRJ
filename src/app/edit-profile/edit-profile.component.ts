@@ -86,7 +86,6 @@ export class EditProfileComponent implements OnInit {
   delete() {
     this.userInfoService.deleteUser().subscribe(() => {
       this.authService.logout();
-      this.router.navigate(['/login']);
     });
   }
 

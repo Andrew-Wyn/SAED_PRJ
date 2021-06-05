@@ -212,6 +212,12 @@ def logged_in():
         return {"have_session": False}
 
 
+@app.route(f"{API_PATH}/remove_session")
+def logged_out():
+    if "id" in session:
+        del session["id"]
+    return {}
+
 def get_user_id(db, account_type, email):
     cur = db.cursor()
     cur.execute("SELECT id FROM users WHERE account_type = ? AND email = ?", (account_type, email))

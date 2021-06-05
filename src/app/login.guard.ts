@@ -17,13 +17,15 @@ export class LoginGuard implements CanActivate {
     return this.checkToken();
   }
 
-  checkToken() {
-    if (!this.authService.hasValidAccessToken) { return true; }
-
-    // Redirect to the home page
-    return this.router.parseUrl('/app/home');
+  checkToken(): Promise<boolean | UrlTree> {
+    return new Promise((resolve) => {
+      this.authService.isLoggedInSession().subscribe(resp => {
+        if (resp.have_session) {
+          resolve(this.router.parseUrl('/app/home'));
+        } else {
+          resolve(true);
+        }
+      });
+    });
   }
-
-
-  
 }
