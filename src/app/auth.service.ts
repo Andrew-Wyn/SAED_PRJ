@@ -92,8 +92,12 @@ export class AuthService {
       }
       sessionStorage.removeItem('oauthType');
     }
-    console.log("personal");
     this.oauthPasswordFlowConfig();
+    if (this.oauthService.hasValidAccessToken()) {
+      console.log("personal");
+      this.configureSession();
+      return;
+    }
   }
 
   oauthGoogleConfig() {
