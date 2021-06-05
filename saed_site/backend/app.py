@@ -51,11 +51,10 @@ with open("oauth_data") as f:
 AccountType = IntEnum("AccountType", "GOOGLE") #FACEBOOK...
 
 
-def removeprefix(self: str, prefix: str, /) -> str:
-    if self.startswith(prefix):
-        return self[len(prefix):]
-    else:
-        return self[:]
+def removeprefix(s, prefix):
+    if s.startswith(prefix):
+        return s[len(prefix):]
+    return s
 
 
 def qmarks(n):
