@@ -515,6 +515,17 @@ def update_ad(ad_id):
     return {}
 
 
+@app.route(f"{API_PATH}/ads/<int:ad_id>", methods=["DELETE"])
+@with_session
+@connect(db=MAIN_DB)
+def delete_ad(ad_id):
+    cur = db.cursor()
+    cur.execute(f"DELETE FROM ads WHERE id = ? AND owner = ?", (ad_id, user_id))
+    if not cur.rowcount:
+        return api_error(401, "Unauthorized")
+    return {}
+
+
 @app.route(f"{API_PATH}/ads", methods=["POST"])
 @with_session
 @with_json(title=is_a(str), description=is_a(str), price=parse_price, ad_type=is_in(ad_types))
