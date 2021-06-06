@@ -66,7 +66,7 @@ def iceil(n, d):
 
 
 def api_error(code, msg):
-    return {"error": msg}, code
+    return {"error": msg, "error_code": str(code)}, code
 
 
 def qmarks(n):
