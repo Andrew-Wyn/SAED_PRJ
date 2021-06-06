@@ -57,7 +57,8 @@ export class AuthService {
   }
 
   private configureSession() {
-    this.http.post<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}configure_session`, {auth_token:this.oauthService.getAccessToken()} as any, this.httpOptions)
+    console.log(typeof this.oauthService.getAccessToken());
+    this.http.put<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}session`, {token:this.oauthService.getAccessToken()} as any, this.httpOptions)
     .pipe(
       tap(_ => console.log('configured session')),
       catchError(this.handleError<any>('configureSession'))
@@ -137,16 +138,17 @@ export class AuthService {
     this.oauthService.logOut();
     sessionStorage.removeItem('oauthType');
     this.logOutSession().subscribe(_ => {
+      console.log("loggin out ... ");
       this.router.navigate(['/login']);
     });
   }
 
   logOutSession() {
-    return this.http.get<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}remove_session`, this.httpOptions);
+    return this.http.delete<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}session`, this.httpOptions);
   }
 
   isLoggedInSession() {
-    return this.http.get<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}have_session`, this.httpOptions);
+    return this.http.get<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}session`, this.httpOptions);
   }
 
 }

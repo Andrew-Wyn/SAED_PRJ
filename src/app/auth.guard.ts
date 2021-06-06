@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
   checkLogin(url: string): Promise<true|UrlTree> {
     return new Promise((resolve) => {
       this.authService.isLoggedInSession().subscribe(resp => {
-        if (resp.have_session) {
+        if (resp.user_id != null) {
           this.userInfoService.setUserInfo()
           resolve(true);
         } else {

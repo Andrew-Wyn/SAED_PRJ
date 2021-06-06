@@ -20,7 +20,7 @@ export class LoginGuard implements CanActivate {
   checkToken(): Promise<boolean | UrlTree> {
     return new Promise((resolve) => {
       this.authService.isLoggedInSession().subscribe(resp => {
-        if (resp.have_session) {
+        if (resp.user_id != null) {
           resolve(this.router.parseUrl('/app/home'));
         } else {
           resolve(true);
