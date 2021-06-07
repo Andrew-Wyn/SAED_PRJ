@@ -1,4 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { FormGroup, FormControl } from '@angular/forms';
+import { Location } from '@angular/common';
+
+import { BandServ } from '../bandServ'
+import { SerateService } from '../serate.service';
+
+import * as GLOBALCONFIG from '../../global-config';
 
 @Component({
   selector: 'app-serate-edit',
@@ -7,9 +15,91 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SerateEditComponent implements OnInit {
 
-  constructor() { }
+  bandServsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'band_servs/photos/';
+  idBandServModify?: number;
+  imageBlob?: string | ArrayBuffer | null;
+
+  valid = false;
+  photo?: string | ArrayBuffer | null;
+
+  bandServModifyForm = new FormGroup({
+    name: new FormControl(undefined),
+    band_type: new FormControl(undefined),
+    description: new FormControl(undefined),
+    date: new FormControl(undefined),
+    start: new FormControl(undefined),
+    end: new FormControl(undefined)
+  });
+
+  constructor(private route: ActivatedRoute, private location: Location, private serateService: SerateService, private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.route.paramMap.subscribe(params => {
+      this.idBandServModify = JSON.parse(params.get('idAdModifiy') as any);
+      console.log(this.idBandServModify);
+      if (this.idBandServModify == undefined) {
+        this.location.back();
+      } else {
+        this.serateService.getBandServ(this.idBandServModify).subscribe(
+          bandServ => {
+            this.bandServModifyForm.patchValue({
+              name: bandServ.name,
+              band_type: bandServ.band_type,
+              date: bandServ.date, // TODO: convert date to string
+              start: bandServ.start,
+              end: bandServ.end,
+              description: bandServ.description
+            });
+            this.valid = true;
+          }
+        );
+      }
+    });
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
+
+  save(): void {
+    if (this.imageBlob != undefined) {
+      this.serateService.updateBandServImage(this.idBandServModify, this.imageBlob).subscribe(_ => {
+
+        this.serateService.updateBandServ(this.idBandServModify, this.bandServModifyForm.value).subscribe(
+          _ => {
+            this.goBack();
+          },
+          (error) => {
+            console.log(error);
+            this.goBack();
+          });
+      });
+    } else {
+        this.serateService.updateBandServ(this.idBandServModify, this.bandServModifyForm.value).subscribe(
+          _ => {
+            this.goBack();
+          },
+          (error) => {
+            console.log(error);
+            this.goBack();
+          });
+    }
+  }
+
+  onFileChange(event: any) {
+    let reader = new FileReader();
+   
+    if(event.target.files && event.target.files.length) {
+      const [file] = event.target.files;
+      reader.readAsArrayBuffer(file);
+    
+      reader.onload = () => {
+        this.imageBlob = reader.result;
+        (document.getElementById('picture-icon') as HTMLImageElement).src = URL.createObjectURL(file);
+        // need to run CD since file load runs outside of zone
+        this.cd.markForCheck();
+      };
+    }  
   }
 
 }
