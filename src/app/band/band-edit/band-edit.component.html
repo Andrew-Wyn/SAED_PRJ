@@ -1,1 +1,33 @@
-<p>band-edit works!</p>
+<div *ngIf="valid; else loading" class="band-edit">
+    <div><h2>Modificare Band</h2></div>
+    <form [formGroup]="bandModifyForm"> 
+        <div class="edit-form">
+            <p>
+                <label for="name"><b>Nome: </b></label>
+                <input type="text" id="name" formControlName="name">
+            </p>
+            <p>
+                <label for="description"><b>Descrizione: </b></label>
+                <input type="text" id="description" formControlName="description">
+            </p>
+            <p>
+                <label for="band_type"><b>Tipo: </b></label>
+                <input type="text" id="band_type" formControlName="band_type">
+            </p>
+            <p>
+                <label for="searching"><b>Ricerca: </b></label>
+                <input type="text" id="searching" formControlName="searching">
+            </p>
+            <h3>Foto: </h3>
+            <img id="picture-icon" [src]="bandsImageUrl + idBandModify"/>
+
+            <p>
+                <input type="file" (change)="onFileChange($event)" required/>
+            </p>
+            <button (click)="save()">modify</button>
+            &nbsp;
+            <button (click)="goBack()">go back</button>    
+        </div>
+    </form>
+</div>
+<ng-template #loading>Loading ...</ng-template>
