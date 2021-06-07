@@ -70,7 +70,7 @@ export class BandService {
   addBand(band: Band): Observable<any> {
     console.log(band);
     return this.http.post<any>(`${this.apiURL}bands`, band, this.httpOptions).pipe(
-      tap((band: any) => console.log(`added band w/ id=${band.band_id}`)),
+      tap(_ => console.log(`added band w/ id=${band.band_id}`)),
       catchError(this.handleError<any>('addBand'))
     );
   }

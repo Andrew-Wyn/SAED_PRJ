@@ -7,5 +7,5 @@ export interface BandServ {
     start?: string;
     end?: string;
     can_edit?: boolean;
-    contanct_info?: any;
+    contact_info?: any;
 }

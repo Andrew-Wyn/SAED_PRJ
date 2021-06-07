@@ -55,7 +55,7 @@ export class MarketService {
   getAd(id?: number): Observable<Ad> {
     const url = `${this.apiURL}ads/${id}`;
     return this.http.get<Ad>(url).pipe(
-      tap(_ => console.log(`fetched hero id=${id}`)),
+      tap(_ => console.log(`fetched ad id=${id}`)),
       catchError(this.handleError<Ad>(`getAd id=${id}`))
     );
   }
@@ -63,7 +63,7 @@ export class MarketService {
   updateAd(adId?: number, ad?: Ad): Observable<any> {
     console.log(ad);
     return this.http.put(`${this.apiURL}ads/${adId}`, ad, this.httpOptions).pipe(
-      tap(_ => console.log(`updated ad id=${ad!.id}`)),
+      tap(_ => console.log(`updated ad id=${ad?.id}`)),
       catchError(this.handleError<any>('updateAd'))
     );  
   }
@@ -71,7 +71,7 @@ export class MarketService {
   addAd(ad: Ad): Observable<any> {
     console.log(ad);
     return this.http.post<any>(`${this.apiURL}ads`, ad, this.httpOptions).pipe(
-      tap((ad: any) => console.log(`added ad w/ id=${ad.id}`)),
+      tap(_ => console.log(`added ad w/ id=${ad.id}`)),
       catchError(this.handleError<any>('addAd'))
     );
   }
@@ -103,24 +103,24 @@ export class MarketService {
     );
   }
 
-  updateAdImage(idAd?: number, imageBlob?: string | ArrayBuffer | null): Observable<any> {    
-    return this.http.put<any>(`${this.apiURL}ads/photos/${idAd}`, imageBlob)
+  updateAdImage(adId?: number, imageBlob?: string | ArrayBuffer | null): Observable<any> {    
+    return this.http.put<any>(`${this.apiURL}ads/photos/${adId}`, imageBlob)
     .pipe(
       tap(_ => console.log('updated user image')),
       catchError(this.handleError<any>('updateUserImage'))
     );
   }
 
-  addPreference(idAd?: number): Observable<any> {
-    return this.http.post<any>(`${this.apiURL}ads/interested/${idAd}`, this.httpOptions).pipe(
-      tap(_ => console.log(`deleted ad interested id=${idAd}`)),
+  addPreference(adId?: number): Observable<any> {
+    return this.http.post<any>(`${this.apiURL}ads/interested/${adId}`, this.httpOptions).pipe(
+      tap(_ => console.log(`deleted ad interested id=${adId}`)),
       catchError(this.handleError<Ad>('deletePreference'))
     );
   }
 
-  deletePreference(idAd?: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiURL}ads/interested/${idAd}`, this.httpOptions).pipe(
-      tap(_ => console.log(`deleted ad interested id=${idAd}`)),
+  deletePreference(adId?: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiURL}ads/interested/${adId}`, this.httpOptions).pipe(
+      tap(_ => console.log(`deleted ad interested id=${adId}`)),
       catchError(this.handleError<Ad>('deletePreference'))
     );
   }

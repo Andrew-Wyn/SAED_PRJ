@@ -1,0 +1,46 @@
+.objects-list {
+    padding: 10px;
+    margin-left: 25%;
+    margin-right: 25%;
+    text-align: center;
+}
+
+.btn-publish {
+    width: 100%;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.search-bar {
+    text-align: center;
+}
+
+.search-bar div {
+    margin: 10px;
+}
+
+h2 {
+    text-align: center;
+}
+
+.card {
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #aaf;
+    background-color: #eef;
+    margin-bottom: 10px;
+}
+
+.photo {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+}
+
+.organizer-info {
+    text-align: center;
+    border-radius: 5px;
+    background-color: rgba(255, 0, 0, 0.3);
+    border: 2px solid red;
+    margin: 5px;
+}

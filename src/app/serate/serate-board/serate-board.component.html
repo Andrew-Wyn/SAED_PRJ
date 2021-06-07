@@ -1,1 +1,71 @@
-<p>serate-board works!</p>
+<div><h2>Ricerca Serate</h2></div>
+<div class="search-bar">
+    <form [formGroup]="bandServSearchOpt" (ngSubmit)="search()">
+        <div>
+            <div>
+                <label for="name">Nome: </label>
+                <input type="text" id="name" formControlName="name" placeholder="nome ...">
+            </div>
+            <div>
+                <label for="band_type">Tipo Banda: </label>
+                <input type="text" id="band_type" formControlName="band_type" placeholder="tipo banda ...">
+            </div>
+            <div>
+                <label for="description">Descrizione: </label>
+                <input type="text" id="description" formControlName="description" placeholder="descrizione ...">
+            </div>
+            <div>
+                <label for="date">Data: </label>
+                <input type="date" id="date" formControlName="date">
+            </div>
+            <div>
+                <label for="start">Inizio: </label>
+                <input type="text" id="start" formControlName="start" placeholder="hh:mm">
+            </div>
+            <div>
+                <label for="end">Fine: </label>
+                <input type="text" id="end" formControlName="end" placeholder="hh:mm">
+            </div>
+        </div>
+        <button>search</button>
+    </form>
+</div>
+<hr>
+<div class="objects-list">
+    <div *ngFor="let bandServ of bandServs$">
+        <div class="card">
+            <div><h2>{{bandServ.name}}</h2></div>
+                <img class="photo" [src]="bandServsImageUrl + bandServ.band_serv_id"/>
+            <p><b>Descrizione:</b>&nbsp;{{bandServ.description}} &euro;</p>
+            <p><b>Data:</b>&nbsp;{{bandServ.date}} &euro;</p>
+            <p><b>Orario Inizio:</b>&nbsp;{{bandServ.start}} &euro;</p>
+            <p><b>Orario Fine:</b>&nbsp;{{bandServ.end}} &euro;</p>
+            <p><b>Tipo di Band:</b>&nbsp;{{bandServ.band_type}}</p>
+            <div class="organizer-info" *ngIf="bandServ.contact_info != null; else nouserinfo">
+                <h2>Informazioni sull'Organizzatore</h2>
+                <p>
+                    <span *ngIf="bandServ.contact_info.email"><b>Indirizzo Posta: </b>{{bandServ.contact_info.email}}<br><br></span>
+                    <span *ngIf="bandServ.contact_info.phone_number"><b>Numero di Telefono: </b>{{bandServ.contact_info.phone_number}}<br><br></span>
+                    <button (click)="deletePreference(bandServ.band_serv_id)">Rimuovi preferenza</button>
+                </p>
+            </div>
+            <ng-template #nouserinfo>
+                <div>
+                    <span *ngIf="bandServ.can_edit; else notmine">
+                        <a [routerLink]="['/app/marketEdit', { idBandServModifiy: bandServ.band_serv_id  | json }]"><button>Modifica Annuncio</button></a>
+                        &nbsp;
+                        <button (click)="delete(bandServ.band_serv_id)">Elimina Serata</button>
+                    </span>
+                    &nbsp;
+                    <ng-template #notmine>
+                        <button (click)="addPreference(bandServ.band_serv_id)">Aggiungi preferenza</button>
+                    </ng-template>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</div>
+<div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.club_owner == true">
+    <a routerLink="/app/marketPublish"><button class="btn-publish">Pubblica Serata</button></a>
+</div>
+
