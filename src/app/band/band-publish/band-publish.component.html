@@ -1,1 +1,32 @@
-<p>band-publish works!</p>
+<div class="band-publish">
+    <div><h2>Creare Nuovo Annuncio</h2></div>
+    <form [formGroup]="bandNewForm">
+        <div class="publish-form">
+            <p>
+                <label for="name"><b>Nome: </b></label>
+                <input type="text" id="name" formControlName="name" required>
+            </p>
+            <p>
+                <label for="description"><b>Descrizione: </b></label>
+                <input type="text" id="description" formControlName="description" required>
+            </p>
+            <p>
+                <label for="band_type"><b>Tipo: </b></label>
+                <input type="text" id="band_type" formControlName="band_type" required>
+            </p>
+            <p>
+                <label for="searching"><b>Ricerca Componenti: </b></label>
+                <input type="text" id="searching" formControlName="searching" required>
+            </p>
+            <h3>Foto: </h3>
+            <img id="picture-icon" src="/assets/images/no_user_image.jpeg"/>
+            <p>
+                <input type="file" (change)="onFileChange($event)" required/>
+            </p>
+
+            <button [disabled]="!bandNewForm.valid" (click)="save()">Create</button>
+            &nbsp;
+            <button (click)="goBack()">go back</button>
+        </div>
+    </form>
+</div>

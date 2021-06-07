@@ -40,7 +40,6 @@ export class MarketPublishComponent implements OnInit {
       title: this.adNewForm.value['title'],
       description: this.adNewForm.value['description'],
       price: this.adNewForm.value['price'],
-      owner: this.userInfoService.userInfo?.id,
       ad_type: this.adNewForm.value['ad_type'],  
     } as Ad
 
