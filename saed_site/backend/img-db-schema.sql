@@ -10,3 +10,15 @@ CREATE TABLE ad_images (
     image BLOB,
     mime TEXT
 );
+
+CREATE TABLE band_images (
+    id INTEGER PRIMARY KEY,
+    image BLOB,
+    mime TEXT
+);
+
+CREATE TABLE band_service_images (
+    id INTEGER PRIMARY KEY,
+    image BLOB,
+    mime TEXT
+);

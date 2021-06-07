@@ -34,3 +34,35 @@ CREATE TABLE ads_interested (
     user_id INTEGER,
     PRIMARY KEY (ad_id, user_id)
 );
+
+CREATE TABLE band (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    band_type TEXT NOT NULL,
+    owner INTEGER NOT NULL REFERENCES users(id),
+    seeking BOOL NOT NULL
+);
+
+CREATE TABLE band_members (
+    user_id INTEGER REFERENCES users(id),
+    band_id INTEGER REFERENCES bands(id),
+    PRIMARY KEY (user_id, band_id)
+);
+
+CREATE TABLE band_applicants (
+    user_id INTEGER REFERENCES users(id),
+    band_id INTEGER REFERENCES bands(id),
+    rejected BOOL NOT NULL,
+    PRIMARY KEY (user_id, band_id)
+);
+
+CREATE TABLE band_service (
+    id INTEGER PRIMARY KEY,
+    owner INTEGER NOT NULL REFERENCES users(id),
+    name TEXT NOT NULL,
+    band_type TEXT NOT NULL,
+    description TEXT NOT NULL,
+    service_start DATETIME NOT NULL,
+    service_end DATETIME NOT NULL
+);
