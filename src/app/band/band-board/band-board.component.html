@@ -1,1 +1,79 @@
-<p>band-board works!</p>
+<div><h2>Ricerca Band</h2></div>
+<div class="search-bar">
+    <form [formGroup]="bandSearchOpt" (ngSubmit)="search()">
+        <div>
+            <div>
+                <label for="name">Nome: </label>
+                <input type="text" id="name" formControlName="name" placeholder="nome ...">
+            </div>
+            <div>
+                <label for="description">Descrizione: </label>
+                <input type="text" id="description" formControlName="description" placeholder="descrizione ...">
+            </div>
+            <div>
+                <label for="band_type">Tipo Band: </label>
+                <input type="text" id="description" formControlName="description" placeholder="tipo band ...">
+            </div>
+            <div>
+                <label for="owner">Proprietario: </label>
+                <input type="text" id="owner" formControlName="owner" placeholder="proprietario ...">
+            </div>
+            <div>
+                <label for="searching">Ricerca Membri: </label>
+                <input type="checkbox" id="searching" formControlName="searching">
+            </div>
+        </div>
+        <button>search</button>
+    </form>
+</div>
+<hr>
+<div class="objects-list">
+    <div *ngFor="let band of bands$">
+        <div class="card">
+            <div><h2>{{band.name}}</h2></div>
+                <img class="photo" [src]="adsImageUrl + band.band_id"/>
+            <p><b>Proprietario:</b>&nbsp;{{band.owner}}</p>
+            <p><b>Descrizione:</b>&nbsp;{{band.description}}</p>
+            <p><b>Tipo:</b>&nbsp;{{band.band_type}}</p>
+            <div class="members">
+                <div *ngFor="let member of band.members">
+                    {{member.name}}&nbsp;<button *ngIf="band.own" (click)="deleteMember(band.band_id, member.user_id)">elimina</button>
+                </div>
+            </div>
+            <div class="band-owner-info" *ngIf="band.contact_info != null; else nouserinfo">
+                <h2>Informazioni sul Proprietario</h2>
+                <p>
+                    <span *ngIf="band.contact_info.email"><b>Indirizzo Posta: </b>{{band.contact_info.email}}<br><br></span>
+                    <span *ngIf="band.contact_info.phone_number"><b>Numero di Telefono: </b>{{band.contact_info.phone_number}}<br><br></span>
+                    <button (click)="deletePreference(band.band_id)">Rimuovi Richiesta</button>
+                </p>
+            </div>
+            <ng-template #nouserinfo>
+                <div>
+                    <span *ngIf="band.can_request">
+                        <button (click)="addPreference(band.band_id)">Aggiungi Richiesta</button>
+                    </span>
+                </div>
+            </ng-template>
+            <div *ngIf="band.searching">
+                La band sta cercando nuovi membri
+            </div>
+            <div>
+                <span *ngIf="band.own">
+                    <span *ngIf="band.join_requests == []">
+                        <div *ngFor="let request of band.join_requests">
+                            {{request.name}}&nbsp;<button (click="acceptRequest(band.band_id, request.user_id)")>Accetta</button>&nbsp;<button (click="declineRequest(band.band_id, request.user_id)")>Declina</button>
+                        </div>
+                    </span>
+                    <a [routerLink]="['/app/bandEdit', { idBandModifiy: band.band_id  | json }]"><button>Modifica Band</button></a>
+                    &nbsp;
+                    <button (click)="delete(band.band_id)">Elimina Annuncio</button>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.musician == true">
+    <a routerLink="/app/bandPublish"><button class="btn-publish">Crea Band</button></a>
+</div>
+

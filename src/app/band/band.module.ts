@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { BandBoardComponent } from './band-board/band-board.component';
 import { BandEditComponent } from './band-edit/band-edit.component';
 import { BandPublishComponent } from './band-publish/band-publish.component';
-
-
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AppRoutingModule } from '../app-routing.module';
 
 @NgModule({
   declarations: [
@@ -13,7 +13,10 @@ import { BandPublishComponent } from './band-publish/band-publish.component';
     BandPublishComponent
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    AppRoutingModule
   ]
 })
 export class BandModule { }

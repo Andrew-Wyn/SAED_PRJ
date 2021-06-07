@@ -45,7 +45,7 @@ export class MarketService {
 
 
   getAds(): Observable<Ad[]> {
-    return this.http.get<Ad[]>(`${this.apiURL}`)
+    return this.http.get<Ad[]>(`${this.apiURL}ads`)
     .pipe(
       tap(_ => console.log('fetched ads')),
       catchError(this.handleError<Ad[]>('getAds', []))
