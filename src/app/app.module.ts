@@ -16,6 +16,8 @@ import { FooterComponent } from './footer/footer.component';
 import { HomeComponent } from './home/home.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { MarketModule } from './market/market.module';
+import { BandModule } from './band/band.module';
+import { SerateModule } from './serate/serate.module';
 import { HttpRequestInterceptor } from './interceptor'
 
 @NgModule({
@@ -37,7 +39,9 @@ import { HttpRequestInterceptor } from './interceptor'
     FormsModule,
     ReactiveFormsModule,
     OAuthModule.forRoot(),    // The HttpClientInMemoryWebApiModule module intercepts HTTP requests
-    MarketModule
+    MarketModule,
+    BandModule,
+    SerateModule
   ],
   providers: [
     // Http Interceptor(s) -  adds with Client Credentials
