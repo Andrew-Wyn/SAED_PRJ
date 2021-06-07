@@ -3,6 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuard } from './auth.guard'
 import { MarketpublishGuard } from './market/marketpublish.guard'
+import { BandPublishGuard } from './band/band-publish.guard'
+import { SeratePublishGuard } from './serate/serate-publish.guard';
 import { LoginGuard } from './login.guard'
 
 import { LoginComponent } from './login/login.component'
@@ -14,6 +16,12 @@ import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { MarketBoardComponent } from './market/market-board/market-board.component';
 import { MarketEditComponent } from './market/market-edit/market-edit.component';
 import { MarketPublishComponent } from './market/market-publish/market-publish.component';
+import { BandBoardComponent } from './band/band-board/band-board.component';
+import { BandEditComponent } from './band/band-edit/band-edit.component';
+import { BandPublishComponent } from './band/band-publish/band-publish.component';
+import { SerateBoardComponent } from './serate/serate-board/serate-board.component';
+import { SerateEditComponent } from './serate/serate-edit/serate-edit.component';
+import { SeratePublishComponent } from './serate/serate-publish/serate-publish.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'app', pathMatch: 'full' },
@@ -39,6 +47,30 @@ const routes: Routes = [
       {
         path: 'marketPublish',
         component: MarketPublishComponent, canActivate: [MarketpublishGuard]
+      },
+      {
+        path: 'band',
+        component: BandBoardComponent,
+      },
+      {
+        path: 'bandEdit',
+        component: BandEditComponent,
+      },
+      {
+        path: 'bandPublish',
+        component: BandPublishComponent, canActivate: [BandPublishGuard]
+      },
+      {
+        path: 'serate',
+        component: SerateBoardComponent,
+      },
+      {
+        path: 'serateEdit',
+        component: SerateEditComponent,
+      },
+      {
+        path: 'seratePublish',
+        component: SeratePublishComponent, canActivate: [SeratePublishGuard]
       }
     ]
   },
