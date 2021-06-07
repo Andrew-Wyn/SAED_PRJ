@@ -68,11 +68,11 @@ export class SerateService {
     );  
   }
 
-  addAd(bandServ: BandServ): Observable<any> {
+  addBandServ(bandServ: BandServ): Observable<any> {
     console.log(bandServ);
     return this.http.post<any>(`${this.apiURL}band_servs`, bandServ, this.httpOptions).pipe(
       tap((bandServ: any) => console.log(`added band service w/ id=${bandServ.band_serv_id}`)),
-      catchError(this.handleError<any>('addAd'))
+      catchError(this.handleError<any>('addBandServ'))
     );
   }
 
