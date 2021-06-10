@@ -8,6 +8,7 @@ export interface Band {
     own?: boolean;
     can_request?: boolean;
     contact_info?: any;
-    join_requests?: any[]; // {user_id: number, name: string}
+    join_requests?: any[]; // {user_id: number, name: string, rejected: boolean}
     searching?: boolean;
+    rejected?: boolean;
 }

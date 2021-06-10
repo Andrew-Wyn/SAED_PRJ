@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuard } from './auth.guard'
 import { MarketpublishGuard } from './market/marketpublish.guard'
+import { MarketEditGuard } from './market/market-edit.guard'
 import { BandPublishGuard } from './band/band-publish.guard'
 import { SeratePublishGuard } from './serate/serate-publish.guard';
 import { LoginGuard } from './login.guard'
@@ -42,7 +43,7 @@ const routes: Routes = [
       },
       {
         path: 'marketEdit',
-        component: MarketEditComponent,
+        component: MarketEditComponent, canActivate: [MarketEditGuard]
       },
       {
         path: 'marketPublish',
@@ -54,7 +55,7 @@ const routes: Routes = [
       },
       {
         path: 'bandEdit',
-        component: BandEditComponent,
+        component: BandEditComponent, canActivate: [BandPublishGuard]
       },
       {
         path: 'bandPublish',
@@ -66,7 +67,7 @@ const routes: Routes = [
       },
       {
         path: 'serateEdit',
-        component: SerateEditComponent,
+        component: SerateEditComponent, canActivate: [SeratePublishGuard]
       },
       {
         path: 'seratePublish',

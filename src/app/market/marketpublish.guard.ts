@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthService } from '../auth.service';
 import { UserInfoService } from '../user-info.service';
 
 @Injectable({
@@ -9,21 +8,25 @@ import { UserInfoService } from '../user-info.service';
 })
 export class MarketpublishGuard implements CanActivate {
 
-  constructor (private userInfoService: UserInfoService, private authService: AuthService, private router: Router) {}
+  constructor (private userInfoService: UserInfoService, private router: Router) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    return this.checkIsFornStrum();
+    return this.checkIsInsrtrumentSupplier();
   }
 
-  checkIsFornStrum(): boolean | UrlTree {
-    // TODO rivedere logica di guardia
-    if (this.userInfoService.userInfo == undefined || !this.userInfoService.userInfo.instrument_supplier) {
-      // Redirect to the home page
-      return this.router.parseUrl('/app/home');
-    }
-    return true;
+  checkIsInsrtrumentSupplier(): Promise<boolean | UrlTree> {
+    return new Promise((resolve) => {
+      this.userInfoService.retriveUserInfo().subscribe(userInfo => {
+        if (userInfo.instrument_supplier) {
+          resolve(true);
+        } else {
+          resolve(this.router.parseUrl('/app/home'));
+        }
+      });
+    });
+  
   }
   
 }

@@ -42,6 +42,8 @@ export class UserInfoService {
 
   // TODO: change name in localSetUserInfo()
   setUserInfo(): void {
+    if (this.userInfo != undefined)
+      return;
     this.http.get<UserInfo>(`${this.apiURL}user_info`)
     .pipe(
       tap(_ => console.log('get user info')),
@@ -54,6 +56,8 @@ export class UserInfoService {
 
   // TODO: change name in getUserInfo()
   retriveUserInfo(): Observable<UserInfo> {
+    if (this.userInfo != undefined)
+      return of(this.userInfo)
     return this.http.get<UserInfo>(`${this.apiURL}user_info`)
     .pipe(
       tap(_ => console.log('get user info')),
