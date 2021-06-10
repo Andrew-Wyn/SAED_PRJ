@@ -1,13 +1,23 @@
 <div *ngIf="userInfoService.userInfo; else loading" class="home">
     <h1>Welcome Back</h1>
-    <div><img class="logo-usr" [src]="userInfoService.imageProfileUrl"/></div>
-    <a routerLink="/app/editProfile"><button>change info</button></a>
+    <div class="user-card">
+        <div><img class="logo-usr" [src]="userInfoService.imageProfileUrl"/></div>
+        <a routerLink="/app/editProfile"><button>change info</button></a>
 
-    <h3>Nome Utente: {{userInfoService.userInfo?.name}}</h3>
-    <h3>Email: {{userInfoService.userInfo?.email}}</h3>
+        <h3>Nome Utente: {{userInfoService.userInfo?.name}}</h3>
+        <h3>Email: {{userInfoService.userInfo?.email}}</h3>
 
-    <h3 *ngIf="userInfoService.userInfo?.musician">Account Musicista</h3>
-    <h3 *ngIf="userInfoService.userInfo?.club_owner">Account Proprietario Locale</h3>
-    <h3 *ngIf="userInfoService.userInfo?.instrument_supplier">Account Fornitore Strumenti</h3>
+        <h3 *ngIf="userInfoService.userInfo?.musician" class="accont-type-info">Account Musicista</h3>
+        <h3 *ngIf="userInfoService.userInfo?.club_owner" class="accont-type-info">Account Proprietario Locale</h3>
+        <h3 *ngIf="userInfoService.userInfo?.instrument_supplier" class="accont-type-info">Account Fornitore Strumenti</h3>
+        <h4 *ngIf="!userInfoService.userInfo?.musician &&
+        !userInfoService.userInfo?.club_owner &&
+        !userInfoService.userInfo?.instrument_supplier"
+        class="accont-type-error">
+            ! Devi scegliere almeno una tipologia di utente !<br>
+            -> cliccare Change Info
+        </h4>
+    </div>
+    
 </div>
 <ng-template #loading>Loading ...</ng-template>

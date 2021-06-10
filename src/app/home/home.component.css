@@ -6,3 +6,28 @@
     border-radius: 50%;
     height: 150px;
 }
+
+.user-card {
+    margin-top: 10px;
+    margin-bottom: 30px;
+    margin-left: 35%;
+    margin-right: 35%;
+    background-color: #eef;
+    border: solid #aaf 1px;
+    padding: 5%;
+    border-radius: 10px;
+}
+
+.accont-type-error {
+    background-color: rgba(255, 0, 0, 0.3);
+    padding: 5px;
+    border-radius: 5px;
+    border: solid red 1px;
+}
+
+.accont-type-info {
+    background-color: rgba(0, 255, 0, 0.3);
+    border: solid green 1px;
+    padding: 5px;
+    border-radius: 10px;
+}
