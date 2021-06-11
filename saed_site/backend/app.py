@@ -7,7 +7,8 @@ from pathlib import Path
 from functools import wraps
 from itertools import islice
 from contextlib import closing, ExitStack, contextmanager
-from sqlite3 import IntegrityError
+from collections import namedtuple
+from sqlite3 import IntegrityError, PARSE_DECLTYPES
 
 import flask
 from flask import Flask, Response, request, redirect, session, jsonify
@@ -65,8 +66,25 @@ def iceil(n, d):
     return -(n // -d)
 
 
+def count_slice(it, start, end):
+    count = sum(1 for _ in islice(it, start))
+    ret = list(islice(it, end-start))
+    count += len(ret) + sum(1 for _ in it)
+    return count, ret
+
+
 def api_error(code, msg):
     return {"error": msg, "error_code": str(code)}, code
+
+
+def modified(cur):
+    return bool(cur.rowcount)
+
+
+def modified_or_error(cur, code, msg):
+    if modified(cur):
+        return {}
+    return api_error(code, msg)
 
 
 def qmarks(n):
@@ -86,11 +104,11 @@ def cols_list(columns):
 
 
 class QueryGenerator:
-    def __init__(self, db, query_head):
+    def __init__(self, db, query_head, params=None):
         self.db = db
         self.query_head = query_head
         self.checks = []
-        self.params = []
+        self.params = [] if params is None else list(params)
         self.query_tail = None
 
     def add_check(self, check, value, validator=identity):
@@ -151,7 +169,7 @@ def connect(**dbs):
         def wrapper(*args, **kwargs):
             with ExitStack() as stack:
                 for variable, db_path in dbs.items():
-                    conn = sqlite3.connect(db_path)
+                    conn = sqlite3.connect(db_path, detect_types=PARSE_DECLTYPES)
                     stack.enter_context(closing(conn))
                     stack.enter_context(conn)
                     stack.enter_context(binding(f, variable, conn))
@@ -488,12 +506,11 @@ def query_ads():
     page = int(request.args.get("page", 0))
     page_size = 10
     page_off = page_size * page
-    count = sum(1 for _ in islice(cur, page_off))
+    count, records = count_slice(cur, page_off, page_off+page_size)
     results = [
         make_ad_object(db, record, user_id)
-        for record in islice(cur, page_size)
+        for record in records
     ]
-    count += len(results) + sum(1 for _ in cur)
     return {
         "pages": iceil(count, page_size),
         "results": results
@@ -510,9 +527,7 @@ def update_ad(ad_id):
     cur.execute(
             f"UPDATE ads SET {updlist(columns)} WHERE id = ? AND owner = ?",
             (json.title, json.description, json.price, json.ad_type, ad_id, user_id))
-    if not cur.rowcount:
-        return api_error(401, "Unauthorized")
-    return {}
+    return modified_or_error(cur, 401, "Unauthorized")
 
 
 @app.route(f"{API_PATH}/ads/<int:ad_id>", methods=["DELETE"])
@@ -521,9 +536,7 @@ def update_ad(ad_id):
 def delete_ad(ad_id):
     cur = db.cursor()
     cur.execute(f"DELETE FROM ads WHERE id = ? AND owner = ?", (ad_id, user_id))
-    if not cur.rowcount:
-        return api_error(401, "Unauthorized")
-    return {}
+    return modified_or_error(cur, 401, "Unauthorized")
 
 
 @app.route(f"{API_PATH}/ads", methods=["POST"])
@@ -566,8 +579,9 @@ def signal_interest(ad_id):
     try:
         cur.execute("INSERT INTO ads_interested(ad_id, user_id) VALUES (?, ?)", (ad_id, user_id))
     except IntegrityError:
-        return {}
-    create_notification(db, owner, f'An user is interested into your ad: "{title}"', picture_url=f"/saed/api/user_image/{user_id}")
+        pass
+    else:
+        create_notification(db, owner, f'An user is interested into your ad: "{title}"', picture_url=f"/saed/api/user_image/{user_id}")
     return {}
 
 
@@ -582,6 +596,252 @@ def revoke_interest(ad_id):
     if cur.rowcount:
         create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', picture_url=f"/saed/api/user_image/{user_id}")
     return {}
+
+
+def is_band_owner(db, user_id, band_id):
+    cur = db.cursor()
+    cur.execute("SELECT NULL FROM bands WHERE id = ? AND owner = ?", (band_id, user_id))
+    return bool(cur.fetchone())
+
+
+def band_member(db, user_id, band_id):
+    cur = db.cursor()
+    cur.execute("SELECT NULL FROM band_members WHERE band_id = ? AND user_id = ?", (band_id, user_id))
+    return bool(cur.fetchone())
+
+
+def band_info(db, band_id):
+    cur = db.cursor()
+    cur.execute("SELECT name, description, band_type, owner, seeking, rejected FROM bands WHERE id = ?", (band_id,))
+    result = cur.fetchone()
+    return result
+
+
+@app.route(f"{API_PATH}/bands", methods=["POST"])
+@with_session
+@with_json(name=is_a(str), description=is_a(str), band_type=is_a(str))
+@connect(db=MAIN_DB)
+def add_band():
+    cur = db.cursor()
+    cur.execute(
+            f"INSERT INTO bands(name, description, band_type, owner, seeking) VALUES ({qmarks(5)})",
+            (json.name, json.description, json.band_type, user_id, False))
+    return {}
+
+
+@app.route(f"{API_PATH}/bands/<int:band_id>", methods=["PUT"])
+@with_session
+@with_json(name=is_a(str), description=is_a(str), band_type=is_a(str))
+@connect(db=MAIN_DB)
+def update_band(band_id):
+    cur = db.cursor()
+    cur.execute(
+            f"UPDATE bands SET name = ?, description = ?, band_type = ? WHERE id = ? AND owner = ?",
+            (json.name, json.description, json.band_type, band_id, user_id))
+    return modified_or_error(cur, 401, "Unauthorized")
+
+
+@app.route(f"{API_PATH}/bands/<int:band_id>/seeking", methods=["PUT"])
+@with_session
+@with_json(seeking=is_a(bool))
+@connect(db=MAIN_DB)
+def set_band_seeking(band_id):
+    cur = db.cursor()
+    cur.execute(
+            "UPDATE bands SET seeking = ? WHERE id = ? AND owner = ?",
+            (json.seeking, band_id, user_id))
+    return modified_or_error(cur, 401, "Unauthorized")
+
+
+@app.route(f"{API_PATH}/bands/<int:band_id>/join_requests", methods=["POST"])
+@with_session
+@connect(db=MAIN_DB)
+def send_band_join_request(band_id):
+    if band_member(db, user_id, band_id):
+        return api_error(401, "Unauthorized")
+    cur = db.cursor()
+    cur.execute("SELECT name, owner, seeking FROM bands WHERE id = ?", (band_id,))
+    result = cur.fetchone()
+    if result is not None:
+        name, owner, seeking = result
+    if result is None or not seeking or owner == user_id:
+        return api_error(401, "Unauthorized")
+    try:
+        cur.execute(
+                "INSERT INTO band_applicants(user_id, band_id, rejected) VALUES (?, ?, ?)",
+                (user_id, band_id, False))
+    except IntegrityError:
+        pass
+    else:
+        create_notification(db, owner, f'A musician wants to join your band: "{name}"', picture_url=f"/saed/api/band_image/{band_id}")
+    return {}
+
+
+def accept_band_join_request(db, band_id, applicant_id):
+    cur.execute("DELETE FROM band_applicants WHERE band_id = ? AND user_id = ?", (band_id, applicant_id))
+    if not modified(cur):
+        return api_error(404, "Not found")
+    cur.execute("INSERT INTO band_members(user_id, band_id) VALUES (?, ?)", (applicant_id, band_id))
+    band_name, _, _, _, _, _ = band_info(db, band_id)
+    create_notification(db, owner, f'You have been accepted into a band "{band_name}"', picture_url=f"/saed/api/band_image/{band_id}")
+    return {}
+
+
+def reject_band_join_request(db, band_id, applicant_id):
+    cur.execute(
+            "UPDATE band_applicants SET rejected = TRUE WHERE band_id = ? AND user_id = ?",
+            (band_id, applicant_id))
+    if not modified(cur):
+        return api_error(404, "Not found")
+    band_name, _, _, _, _, _ = band_info(db, band_id)
+    create_notification(db, owner, f'Your application for the band "{band_name}" has been rejected', picture_url=f"/saed/api/band_image/{band_id}")
+    return {}
+
+
+@app.route(f"{API_PATH}/bands/<int:band_id>/join_requests/<int:applicant_id>", methods=["PUT"])
+@with_session
+@with_json(accept=is_a(bool))
+@connect(db=MAIN_DB)
+def update_band_join_request(band_id, applicant_id):
+    if not is_band_owner(db, user_id, band_id):
+        return api_error(401, "Unauthorized")
+    if json.accept:
+        return accept_band_join_request(db, band_id, applicant_id)
+    return reject_band_join_request(db, band_id, applicant_id)
+
+
+
+@app.route(f"{API_PATH}/bands/<int:band_id>", methods=["DELETE"])
+@with_session
+@connect(db=MAIN_DB)
+def delete_band(band_id):
+    cur = db.cursor()
+    cur.execute("DELETE FROM bands WHERE id = ? AND owner = ?", (band_id, user_id))
+    if not modified(cur):
+        return api_error(401, "Unauthorized")
+    cur.execute("DELETE FROM band_members WHERE band_id = ?", (band_id,))
+
+
+BandRecord = namedtuple("BandRecord", "band_id name description band_type owner seeking owner_name owner_email owner_phone rejected member_id")
+
+
+def make_band_object(db, record, user_id):
+    cur = db.cursor()
+    record = BandRecord._make(record)
+    is_owner = record.owner == user_id
+    is_member = record.member_id is not None
+    requested = record.rejected is not None
+    ret = {
+        "id": record.band_id,
+        "name": record.name,
+        "description": record.description,
+        "band_type": record.band_type,
+        "owner": record.owner_name,
+        "seeking": bool(record.seeking),
+        "rejected": bool(record.rejected),
+        "own": is_owner,
+        "can_request": record.seeking and not is_owner and not is_member and not requested,
+        "contact_info": None,
+        "members": None,
+        "join_requests": None
+    }
+
+    if requested:
+        ret["contact_info"] = {
+            "email": record.owner_email,
+            "phone_number": record.owner_phone
+        }
+
+    cur.execute("SELECT bm.user_id, users.name FROM band_members AS bm JOIN users ON bm.user_id = users.id WHERE bm.band_id = ?", (record.band_id,))
+    ret["members"] = [
+        {"user_id": user_id, "name": user_name}
+        for user_id, user_name in cur
+    ]
+
+    cur.execute("SELECT ba.user_id, ba.rejected, users.name FROM band_applicants AS ba JOIN users ON ba.user_id = users.id WHERE ba.band_id = ?", (record.band_id,))
+    ret["join_requests"] = [
+        {"user_id": user_id, "name": user_name, "rejected": rejected}
+        for user_id, rejected, user_name in cur
+    ]
+
+    return ret
+
+
+@app.route(f"{API_PATH}/bands/<int:band_id>")
+@with_session
+@connect(db=MAIN_DB)
+def get_band(band_id):
+    cur = db.cursor()
+    cur.execute("""
+        SELECT bands.id, bands.name, bands.description, bands.band_type, bands.owner, bands.seeking,
+               users.name, users.email, users.phone_number, ba.rejected, bm.user_id
+        FROM bands
+             JOIN users ON bands.owner = users.id
+             LEFT JOIN band_applicants AS ba ON ba.band_id = bands.id AND ba.user_id = ?
+             LEFT JOIN band_members AS bm ON bm.band_id = bands.id AND bm.user_id = ?
+        WHERE bands.id = ?
+        """, (user_id, user_id, band_id,))
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "Not found")
+    return make_band_object(db, result, user_id)
+
+
+@app.route(f"{API_PATH}/bands")
+@with_session
+@connect(db=MAIN_DB)
+def query_bands():
+    query = QueryGenerator(db, """
+        SELECT bands.id, bands.name, bands.description, bands.band_type, bands.owner, bands.seeking,
+               users.name, users.email, users.phone_number, ba.rejected, bm.user_id
+        FROM bands
+             JOIN users ON bands.owner = users.id
+             LEFT JOIN band_applicants AS ba ON ba.band_id = bands.id AND ba.user_id = ?
+             LEFT JOIN band_members AS bm ON bm.band_id = bands.id AND bm.user_id = ?
+        """, (user_id, user_id))
+    checks = (
+        ("bands.name LIKE '%'||?||'%'", "name", identity),
+        ("bands.description LIKE '%'||?||'%'", "description", identity),
+        ("bands.band_type LIKE '%'||?||'%'", "type", identity),
+        ("users.name LIKE '%'||?||'%'", "owner", identity)
+    )
+    for check, arg, validator in checks:
+        try:
+            query.add_check(check, request.args[arg], validator)
+        except ValueError:
+            return api_error(400, "Bad request")
+        except KeyError:
+            pass
+    query.finalize("ORDER BY bands.name COLLATE NOCASE")
+    cur = query.execute()
+    page = int(request.args.get("page", 0))
+    page_size = 10
+    page_off = page_size * page
+    count, records = count_slice(cur, page_off, page_off+page_size)
+    results = [
+        make_band_object(db, record, user_id)
+        for record in records
+    ]
+    return {
+        "pages": iceil(count, page_size),
+        "results": results
+    }
+
+
+@app.route(f"{API_PATH}/bands/photos/<int:band_id>")
+@with_session
+@connect(img_db=IMG_DB)
+def get_band_image(band_id):
+    return get_image(img_db, False, "band_images", band_id)
+
+
+@app.route(f"{API_PATH}/bands/photos/<int:band_id>", methods=["PUT"])
+@with_session
+@connect(db=MAIN_DB, img_db=IMG_DB)
+def set_band_image(band_id):
+    if not is_band_owner(db, user_id, band_id):
+        return api_error(401, "Unauthorized")
+    return set_image(img_db, False, "band_images", band_id, 4*MB)
 
 
 if __name__ == "__main__":

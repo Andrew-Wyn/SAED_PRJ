@@ -35,7 +35,7 @@ CREATE TABLE ads_interested (
     PRIMARY KEY (ad_id, user_id)
 );
 
-CREATE TABLE band (
+CREATE TABLE bands (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
