@@ -654,7 +654,7 @@ def set_band_seeking(band_id):
     return modified_or_error(cur, 401, "Unauthorized")
 
 
-@app.route(f"{API_PATH}/bands/<int:band_id>/join_requests", methods=["POST"])
+@app.route(f"{API_PATH}/bands/<int:band_id>/join_request", methods=["PUT"])
 @with_session
 @connect(db=MAIN_DB)
 def send_band_join_request(band_id):
@@ -676,6 +676,15 @@ def send_band_join_request(band_id):
     else:
         create_notification(db, owner, f'A musician wants to join your band: "{name}"', picture_url=f"/saed/api/band_image/{band_id}")
     return {}
+
+
+@app.route(f"{API_PATH}/bands/<int:band_id>/join_request", methods=["DELETE"])
+@with_session
+@connect(db=MAIN_DB)
+def send_band_join_request(band_id):
+    cur = db.cursor()
+    cur.execute("DELETE FROM band_applicants WHERE band_id = ? AND user_id = ? AND NOT rejected", (band_id, user_id))
+    return modified_or_error(cur, 401, "Unauthorized")
 
 
 def accept_band_join_request(db, band_id, applicant_id):
