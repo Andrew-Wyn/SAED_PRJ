@@ -30,8 +30,8 @@ CREATE TABLE ads (
 );
 
 CREATE TABLE ads_interested (
-    ad_id INTEGER,
-    user_id INTEGER,
+    ad_id INTEGER REFERENCES ads(id),
+    user_id INTEGER REFERENCES users(id),
     PRIMARY KEY (ad_id, user_id)
 );
 
@@ -57,7 +57,7 @@ CREATE TABLE band_applicants (
     PRIMARY KEY (user_id, band_id)
 );
 
-CREATE TABLE band_service (
+CREATE TABLE band_services (
     id INTEGER PRIMARY KEY,
     owner INTEGER NOT NULL REFERENCES users(id),
     name TEXT NOT NULL,
@@ -65,4 +65,10 @@ CREATE TABLE band_service (
     description TEXT NOT NULL,
     service_start DATETIME NOT NULL,
     service_end DATETIME NOT NULL
+);
+
+CREATE TABLE band_services_interested (
+    band_service_id INTEGER REFERENCES band_services(id),
+    user_id INTEGER REFERENCES users(id),
+    PRIMARY KEY (ad_id, user_id)
 );

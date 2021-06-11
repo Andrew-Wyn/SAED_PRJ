@@ -8,6 +8,7 @@ from functools import wraps
 from itertools import islice
 from contextlib import closing, ExitStack, contextmanager
 from collections import namedtuple
+from datetime import date, time, datetime, timedelta
 from sqlite3 import IntegrityError, PARSE_DECLTYPES
 
 import flask
@@ -842,6 +843,148 @@ def set_band_image(band_id):
     if not is_band_owner(db, user_id, band_id):
         return api_error(401, "Unauthorized")
     return set_image(img_db, False, "band_images", band_id, 4*MB)
+
+
+@app.route(f"{API_PATH}/band_services", methods=["POST"])
+@with_session
+@with_json(name=is_a(str), description=is_a(str), band_type=is_a(str), date=date.fromisoformat, start_time=time.fromisoformat, end_time=time.fromisoformat)
+@connect(db=MAIN_DB)
+def add_band_service():
+    cur = db.cursor()
+    start_date = datetime.combine(date, start_time)
+    end_date = datetime.combine(date, end_time)
+    if end_date <= start_date:
+        end_date += timedelta(days=1)
+    cur.execute(
+            f"INSERT INTO band_services(owner, name, band_type, description, service_start, service_end) VALUES ({qmarks(6)})",
+            (user_id, json.name, json.band_type, json.description, start_date, end_date))
+    return {}
+
+
+@app.route(f"{API_PATH}/band_services/<int:service_id>", methods=["PUT"])
+@with_session
+@with_json(name=is_a(str), description=is_a(str), band_type=is_a(str), date=date.fromisoformat, start_time=time.fromisoformat, end_time=time.fromisoformat)
+@connect(db=MAIN_DB)
+def update_band_service():
+    cur = db.cursor()
+    start_date = datetime.combine(date, start_time)
+    end_date = datetime.combine(date, end_time)
+    if end_date <= start_date:
+        end_date += timedelta(days=1)
+    cur.execute(
+            f"UPDATE band_services SET owner = ?, name = ?, band_type = ?, description = ?, service_start = ?, service_end = ? WHERE id = ? AND owner = ?",
+            (user_id, json.name, json.band_type, json.description, start_date, end_date, service_id, user_id))
+    return modified_or_error(cur, 401, "Unauthorized")
+
+
+BandServiceRecord = namedtuple("BandServiceRecord", "service_id name band_type description start_date end_date owner owner_name owner_email owner_phone interested_user_id")
+
+
+def make_band_service_object(db, record, user_id):
+    record = BandServiceRecord._make(record)
+    ret = {
+        "band_serv_id": record.service_id,
+        "name": record.name,
+        "owner": record.owner_name,
+        "band_type": record.band_type,
+        "description": record.description,
+        "date": record.start_date.date().isoformat(),
+        "start": record.start_date.time().isoformat(),
+        "end": record.end_date.time().isoformat(),
+        "can_edit": record.owner == user_id,
+        "contanct_info": None
+    }
+    if record.interested_user_id is not None:
+        ret["contact_info"] = {
+            "email": record.owner_email,
+            "phone_number": record.owner_phone
+        }
+    return ret
+
+
+@app.route(f"{API_PATH}/band_services/<int:service_id>")
+@with_session
+@connect(db=MAIN_DB)
+def get_band_service(service_id):
+    cur = db.cursor()
+    cur.execute("""
+        SELECT bs.id, bs.name, bs.band_type, bs.description, bs.service_start, bs.service_end,
+               bs.owner, users.name, users.email, users.phone_number, bsi.user_id
+        FROM band_services AS bs
+             JOIN users ON bs.owner = users.id
+             LEFT JOIN band_services_intersted AS bsi ON bsi.band_service_id = bs.id AND bsi.user_id = ?
+        WHERE bs.id = ?
+        """, (user_id, service_id))
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "Not found")
+    return make_band_service_object(db, result, user_id)
+
+
+def start_of_day(s):
+    return datetime.combine(date.fromisoformat(s), time.min)
+
+
+def end_of_day(s):
+    return datetime.combine(date.fromisoformat(s), time.max)
+
+
+@app.route(f"{API_PATH}/band_services")
+@with_session
+@connect(db=MAIN_DB)
+def get_band_service(service_id):
+    query = QueryGenerator(db, """
+        SELECT bs.id, bs.name, bs.band_type, bs.description, bs.service_start, bs.service_end,
+               bs.owner, users.name, users.email, users.phone_number, bsi.user_id
+        FROM band_services AS bs
+             JOIN users ON bs.owner = users.id
+             LEFT JOIN band_services_intersted AS bsi ON bsi.band_service_id = bs.id AND bsi.user_id = ?
+        """, (user_id,))
+    checks = (
+        ("bs.name LIKE '%'||?||'%'", "name", identity),
+        ("bs.description LIKE '%'||?||'%'", "description", identity),
+        ("bs.band_type LIKE '%'||?||'%'", "type", identity),
+        ("users.name LIKE '%'||?||'%'", "owner", identity),
+        ("bs.service_start >= ?", "min_date", start_of_day),
+        ("bs.service_start <= ?", "max_date", end_of_day)
+    )
+    for check, arg, validator in checks:
+        try:
+            query.add_check(check, request.args[arg], validator)
+        except ValueError:
+            return api_error(400, "Bad request")
+        except KeyError:
+            pass
+    query.finalize("ORDER BY bs.service_start")
+    cur = query.execute()
+    page = int(request.args.get("page", 0))
+    page_size = 10
+    page_off = page_size * page
+    count, records = count_slice(cur, page_off, page_off+page_size)
+    results = [
+        make_band_service_object(db, record, user_id)
+        for record in records
+    ]
+    return {
+        "pages": iceil(count, page_size),
+        "results": results
+    }
+
+
+@app.route(f"{API_PATH}/band_services/photos/<int:service_id>")
+@with_session
+@connect(img_db=IMG_DB)
+def get_band_image(service_id):
+    return get_image(img_db, False, "band_service_images", service_id)
+
+
+@app.route(f"{API_PATH}/band_services/photos/<int:service_id>", methods=["PUT"])
+@with_session
+@connect(db=MAIN_DB, img_db=IMG_DB)
+def set_band_image(service_id):
+    if not is_service_owner(db, user_id, service_id):
+        return api_error(401, "Unauthorized")
+    return set_image(img_db, False, "band_service_images", service_id, 4*MB)
 
 
 if __name__ == "__main__":
