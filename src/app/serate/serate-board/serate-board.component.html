@@ -52,7 +52,7 @@
             <ng-template #nouserinfo>
                 <div>
                     <span *ngIf="bandServ.can_edit; else notmine">
-                        <a [routerLink]="['/app/marketEdit', { idBandServModifiy: bandServ.band_serv_id  | json }]"><button>Modifica Annuncio</button></a>
+                        <a [routerLink]="['/app/serateEdit', { idBandServModifiy: bandServ.band_serv_id  | json }]"><button>Modifica Annuncio</button></a>
                         &nbsp;
                         <button (click)="delete(bandServ.band_serv_id)">Elimina Serata</button>
                     </span>
@@ -68,4 +68,3 @@
 <div *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.club_owner == true">
     <a routerLink="/app/seratePublish"><button class="btn-publish">Pubblica Serata</button></a>
 </div>
-
