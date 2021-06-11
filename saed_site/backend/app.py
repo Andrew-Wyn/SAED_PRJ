@@ -674,7 +674,7 @@ def send_band_join_request(band_id):
     except IntegrityError:
         pass
     else:
-        create_notification(db, owner, f'A musician wants to join your band: "{name}"', picture_url=f"/saed/api/band_image/{band_id}")
+        create_notification(db, owner, f'A musician wants to join your band: "{name}"', picture_url=f"/saed/api/bands/images/{band_id}")
     return {}
 
 
@@ -693,7 +693,7 @@ def accept_band_join_request(db, band_id, applicant_id):
         return api_error(404, "Not found")
     cur.execute("INSERT INTO band_members(user_id, band_id) VALUES (?, ?)", (applicant_id, band_id))
     band_name, _, _, _, _, _ = band_info(db, band_id)
-    create_notification(db, owner, f'You have been accepted into a band "{band_name}"', picture_url=f"/saed/api/band_image/{band_id}")
+    create_notification(db, owner, f'You have been accepted into a band "{band_name}"', picture_url=f"/saed/api/bands/images/{band_id}")
     return {}
 
 
@@ -704,7 +704,7 @@ def reject_band_join_request(db, band_id, applicant_id):
     if not modified(cur):
         return api_error(404, "Not found")
     band_name, _, _, _, _, _ = band_info(db, band_id)
-    create_notification(db, owner, f'Your application for the band "{band_name}" has been rejected', picture_url=f"/saed/api/band_image/{band_id}")
+    create_notification(db, owner, f'Your application for the band "{band_name}" has been rejected', picture_url=f"/saed/api/bands/images/{band_id}")
     return {}
 
 
@@ -838,14 +838,14 @@ def query_bands():
     }
 
 
-@app.route(f"{API_PATH}/bands/photos/<int:band_id>")
+@app.route(f"{API_PATH}/bands/images/<int:band_id>")
 @with_session
 @connect(img_db=IMG_DB)
 def get_band_image(band_id):
     return get_image(img_db, False, "band_images", band_id)
 
 
-@app.route(f"{API_PATH}/bands/photos/<int:band_id>", methods=["PUT"])
+@app.route(f"{API_PATH}/bands/images/<int:band_id>", methods=["PUT"])
 @with_session
 @connect(db=MAIN_DB, img_db=IMG_DB)
 def set_band_image(band_id):
@@ -980,14 +980,14 @@ def query_band_service(service_id):
     }
 
 
-@app.route(f"{API_PATH}/band_services/photos/<int:service_id>")
+@app.route(f"{API_PATH}/band_services/images/<int:service_id>")
 @with_session
 @connect(img_db=IMG_DB)
 def get_band_service_image(service_id):
     return get_image(img_db, False, "band_service_images", service_id)
 
 
-@app.route(f"{API_PATH}/band_services/photos/<int:service_id>", methods=["PUT"])
+@app.route(f"{API_PATH}/band_services/images/<int:service_id>", methods=["PUT"])
 @with_session
 @connect(db=MAIN_DB, img_db=IMG_DB)
 def set_band_service_image(service_id):
