@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 
 import { Observable, of } from 'rxjs';
+import {Location} from '@angular/common'; 
 
 import { UserInfoService } from '../../user-info.service'
 import { MarketService } from '../market.service'
@@ -10,6 +11,7 @@ import { Ad } from '../ad'
 import { AdSearchOpt } from '../adSearchOpt'
 
 import * as GLOBALCONFIG from '../../global-config'
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-market-board',
@@ -31,13 +33,34 @@ export class MarketBoardComponent implements OnInit {
     description: new FormControl(undefined)
   });
 
-  constructor(private marketService: MarketService, public userInfoService: UserInfoService) { }
+  constructor(
+    private marketService: MarketService,
+    public userInfoService: UserInfoService,
+    private route: ActivatedRoute,
+    private location: Location
+    ) {}
+  
   ngOnInit(): void {
-    this.search();
+    this.route.paramMap.subscribe(params => {
+      let id = JSON.parse(params.get('id') as any) as number;
+      if (id != null){
+        this.searchSingleAd(id);
+      } else {
+        this.search();
+      }
+    });
+  }
+
+  searchSingleAd(idObj: number) {
+    this.marketService.getAd(idObj).subscribe(ad => {
+      this.ads$ = [ad]
+    });
   }
 
   // Push a search term into the observable stream.
   search(): void {
+    // eliminate url params id from notification calls
+    this.location.replaceState("/app/market");
     this.marketService.searchAds(this.adSearchOpt.value as AdSearchOpt).subscribe(result => {
       console.log(result.results);
       this.ads$ = result.results;

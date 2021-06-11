@@ -113,3 +113,7 @@
   border-radius: 50%;
   height: 50px;
 }
+
+.item-notify:hover {
+  cursor: pointer;
+}

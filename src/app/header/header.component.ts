@@ -6,9 +6,11 @@ import { catchError, repeatWhen, retryWhen, tap } from 'rxjs/operators';
 
 import { AuthService } from '../auth.service'
 import { UserInfoService } from '../user-info.service'
+
 import { Notify } from '../notify'
 
 import * as GLOBALCONFIG from '../global-config'
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -39,7 +41,12 @@ export class HeaderComponent implements OnInit {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
 
-  constructor(private http: HttpClient, public authService: AuthService, public userInfoService: UserInfoService) {
+  constructor(
+    private http: HttpClient,
+    public authService: AuthService,
+    public userInfoService: UserInfoService,
+    private router: Router
+    ) {
   }
 
   ngOnInit(): void {
@@ -64,8 +71,11 @@ export class HeaderComponent implements OnInit {
     );
   }
 
-
   logout() {
     this.authService.logout()
+  }
+
+  actionNotify(action_url: any) {
+    this.router.navigate(['/app/market', { id: 2 }]);
   }
 }
