@@ -33,7 +33,7 @@
 <hr>
 <div class="objects-list">
     <div *ngFor="let bandServ of bandServs$">
-        <div class="card">
+        <div class="card-obj">
             <div><h2>{{bandServ.name}}</h2></div>
                 <img class="photo" [src]="bandServsImageUrl + bandServ.band_serv_id"/>
             <p><b>Descrizione:</b>&nbsp;{{bandServ.description}} &euro;</p>

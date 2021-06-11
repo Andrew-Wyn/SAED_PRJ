@@ -1,6 +1,6 @@
 <div *ngIf="userInfoService.userInfo; else loading" class="home">
     <h1>Welcome Back</h1>
-    <div class="user-card">
+    <div class="card">
         <div><img class="logo-usr" [src]="userInfoService.imageProfileUrl"/></div>
         <a routerLink="/app/editProfile"><button>change info</button></a>
 

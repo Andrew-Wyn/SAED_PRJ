@@ -1,7 +1,7 @@
 <div *ngIf="valid; else loading" class="band-edit">
     <div><h2>Modificare Band</h2></div>
     <form [formGroup]="bandModifyForm"> 
-        <div class="edit-form">
+        <div class="card">
             <p>
                 <label for="name"><b>Nome: </b></label>
                 <input type="text" id="name" formControlName="name">

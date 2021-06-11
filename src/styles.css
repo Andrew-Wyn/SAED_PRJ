@@ -28,3 +28,28 @@ input[type="text"]:focus{outline: none;}
 input[type="number"] {
     width: 50px;
 }
+
+.card {
+    margin-top: 10px !important;
+    margin-bottom: 30px !important;
+    margin-left: 35% !important;
+    margin-right: 35% !important;
+    background-color: #eef;
+    border: solid #aaf 1px;
+    padding: 5%;
+    border-radius: 10px;
+}
+
+.card-obj {
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #aaf;
+    background-color: #eef;
+    margin-bottom: 10px;
+    transition: all 0.5s;
+}
+
+.card-obj:hover {
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    transform: translateY(-5px);
+}

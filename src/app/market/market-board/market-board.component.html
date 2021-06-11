@@ -33,7 +33,7 @@
 <hr>
 <div class="objects-list">
     <div *ngFor="let ad of ads$">
-        <div class="card">
+        <div class="card-obj">
             <div><h2>{{ad.title}}</h2></div>
                 <img class="photo" [src]="adsImageUrl + ad.id"/>
             <p><b>Prezzo:</b>&nbsp;{{ad.price}} &euro;</p>

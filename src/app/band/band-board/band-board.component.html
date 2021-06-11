@@ -29,7 +29,7 @@
 <hr>
 <div class="objects-list">
     <div *ngFor="let band of bands$">
-        <div class="card">
+        <div class="card-obj">
             <div><h2>{{band.name}}</h2></div>
                 <img class="photo" [src]="adsImageUrl + band.band_id"/>
             <p><b>Proprietario:</b>&nbsp;{{band.owner}}</p>

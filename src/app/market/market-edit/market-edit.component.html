@@ -1,7 +1,7 @@
 <div *ngIf="valid; else loading" class="ad-edit">
     <div><h2>Modificare Annuncio</h2></div>
     <form [formGroup]="adModifyForm"> 
-        <div class="edit-form">
+        <div class="card">
             <p>
                 <label for="title"><b>Title: </b></label>
                 <input type="text" id="title" formControlName="title">
