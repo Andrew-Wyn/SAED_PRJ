@@ -632,13 +632,13 @@ def add_band():
 
 @app.route(f"{API_PATH}/bands/<int:band_id>", methods=["PUT"])
 @with_session
-@with_json(name=is_a(str), description=is_a(str), band_type=is_a(str))
+@with_json(name=is_a(str), description=is_a(str), band_type=is_a(str), seeking=is_a(bool))
 @connect(db=MAIN_DB)
 def update_band(band_id):
     cur = db.cursor()
     cur.execute(
-            f"UPDATE bands SET name = ?, description = ?, band_type = ? WHERE id = ? AND owner = ?",
-            (json.name, json.description, json.band_type, band_id, user_id))
+            f"UPDATE bands SET name = ?, description = ?, band_type = ?, seeking = ? WHERE id = ? AND owner = ?",
+            (json.name, json.description, json.band_type, json.seeking, band_id, user_id))
     return modified_or_error(cur, 401, "Unauthorized")
 
 
@@ -932,7 +932,7 @@ def end_of_day(s):
 @app.route(f"{API_PATH}/band_services")
 @with_session
 @connect(db=MAIN_DB)
-def get_band_service(service_id):
+def query_band_service(service_id):
     query = QueryGenerator(db, """
         SELECT bs.id, bs.name, bs.band_type, bs.description, bs.service_start, bs.service_end,
                bs.owner, users.name, users.email, users.phone_number, bsi.user_id
@@ -974,14 +974,14 @@ def get_band_service(service_id):
 @app.route(f"{API_PATH}/band_services/photos/<int:service_id>")
 @with_session
 @connect(img_db=IMG_DB)
-def get_band_image(service_id):
+def get_band_service_image(service_id):
     return get_image(img_db, False, "band_service_images", service_id)
 
 
 @app.route(f"{API_PATH}/band_services/photos/<int:service_id>", methods=["PUT"])
 @with_session
 @connect(db=MAIN_DB, img_db=IMG_DB)
-def set_band_image(service_id):
+def set_band_service_image(service_id):
     if not is_service_owner(db, user_id, service_id):
         return api_error(401, "Unauthorized")
     return set_image(img_db, False, "band_service_images", service_id, 4*MB)

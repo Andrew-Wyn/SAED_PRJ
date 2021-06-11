@@ -70,5 +70,5 @@ CREATE TABLE band_services (
 CREATE TABLE band_services_interested (
     band_service_id INTEGER REFERENCES band_services(id),
     user_id INTEGER REFERENCES users(id),
-    PRIMARY KEY (ad_id, user_id)
+    PRIMARY KEY (band_service_id, user_id)
 );
