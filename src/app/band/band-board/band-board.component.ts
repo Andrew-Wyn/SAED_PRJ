@@ -16,14 +16,14 @@ import * as GLOBALCONFIG from '../../global-config'
 })
 export class BandBoardComponent implements OnInit {
   bands$: Band[] = [];
-  adsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'bands/photos/';
+  adsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'bands/images/';
 
   bandSearchOpt = new FormGroup({
     name: new FormControl(undefined),
     description: new FormControl(undefined),
     band_type: new FormControl(undefined),
     owner: new FormControl(undefined),
-    searching: new FormControl(undefined)
+    seeking: new FormControl(undefined)
   });
 
   constructor(private bandService: BandService, public userInfoService: UserInfoService) { }
@@ -34,7 +34,7 @@ export class BandBoardComponent implements OnInit {
 
   private updateBandList(band_id?: number) {
     this.bandService.getBand(band_id).subscribe(modifiedBand => {
-      let objIndex = this.bands$.findIndex((bandItem => bandItem.band_id == band_id));
+      let objIndex = this.bands$.findIndex((bandItem => bandItem.id == band_id));
       this.bands$[objIndex] = modifiedBand;
     });
   }
@@ -51,19 +51,12 @@ export class BandBoardComponent implements OnInit {
   }
 
   addPreference(band_id?: number): void {
-    // chiamare end point per la preferenza 'ads/interested/<id>' e modificare valore contact info
-    // richiamando nuovamente ads/<id>
     this.bandService.addPreference(band_id).subscribe(_ => {
-      this.bandService.getBand(band_id).subscribe(modifiedBand => {
-        let objIndex = this.bands$.findIndex((bandItem => bandItem.band_id == band_id));
-        this.bands$[objIndex] = modifiedBand;
-        console.log(this.bands$);
-      });
+      this.updateBandList(band_id);
     });
   }
 
   deletePreference(band_id?: number): void {
-    // chiamare end point per la preferenza con delete
     this.bandService.deletePreference(band_id).subscribe(_ => {
       this.updateBandList(band_id);
     });

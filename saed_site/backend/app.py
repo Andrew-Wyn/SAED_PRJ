@@ -613,7 +613,7 @@ def band_member(db, user_id, band_id):
 
 def band_info(db, band_id):
     cur = db.cursor()
-    cur.execute("SELECT name, description, band_type, owner, seeking, rejected FROM bands WHERE id = ?", (band_id,))
+    cur.execute("SELECT name, description, band_type, owner, seeking FROM bands WHERE id = ?", (band_id,))
     result = cur.fetchone()
     return result
 
@@ -627,7 +627,7 @@ def add_band():
     cur.execute(
             f"INSERT INTO bands(name, description, band_type, owner, seeking) VALUES ({qmarks(5)})",
             (json.name, json.description, json.band_type, user_id, False))
-    return {}
+    return {"band_id": cur.lastrowid}
 
 
 @app.route(f"{API_PATH}/bands/<int:band_id>", methods=["PUT"])
@@ -681,30 +681,32 @@ def send_band_join_request(band_id):
 @app.route(f"{API_PATH}/bands/<int:band_id>/join_request", methods=["DELETE"])
 @with_session
 @connect(db=MAIN_DB)
-def send_band_join_request(band_id):
+def remove_band_join_request(band_id):
     cur = db.cursor()
     cur.execute("DELETE FROM band_applicants WHERE band_id = ? AND user_id = ? AND NOT rejected", (band_id, user_id))
     return modified_or_error(cur, 401, "Unauthorized")
 
 
 def accept_band_join_request(db, band_id, applicant_id):
+    cur = db.cursor()
     cur.execute("DELETE FROM band_applicants WHERE band_id = ? AND user_id = ?", (band_id, applicant_id))
     if not modified(cur):
         return api_error(404, "Not found")
     cur.execute("INSERT INTO band_members(user_id, band_id) VALUES (?, ?)", (applicant_id, band_id))
-    band_name, _, _, _, _, _ = band_info(db, band_id)
-    create_notification(db, owner, f'You have been accepted into a band "{band_name}"', picture_url=f"/saed/api/bands/images/{band_id}")
+    band_name, _, _, owner, _ = band_info(db, band_id)
+    create_notification(db, owner, f'You have been accepted into a band "{band_name}"', picture_url=f"/saed/api/band_image/{band_id}")
     return {}
 
 
 def reject_band_join_request(db, band_id, applicant_id):
+    cur = db.cursor()
     cur.execute(
             "UPDATE band_applicants SET rejected = TRUE WHERE band_id = ? AND user_id = ?",
             (band_id, applicant_id))
     if not modified(cur):
         return api_error(404, "Not found")
-    band_name, _, _, _, _, _ = band_info(db, band_id)
-    create_notification(db, owner, f'Your application for the band "{band_name}" has been rejected', picture_url=f"/saed/api/bands/images/{band_id}")
+    band_name, _, _, owner, _ = band_info(db, band_id)
+    create_notification(db, owner, f'Your application for the band "{band_name}" has been rejected', picture_url=f"/saed/api/band_image/{band_id}")
     return {}
 
 
@@ -867,7 +869,7 @@ def add_band_service():
     cur.execute(
             f"INSERT INTO band_services(owner, name, band_type, description, service_start, service_end) VALUES ({qmarks(6)})",
             (user_id, json.name, json.band_type, json.description, start_date, end_date))
-    return {}
+    return {"band_serv_id": cur.lastrowid}
 
 
 @app.route(f"{API_PATH}/band_services/<int:service_id>", methods=["PUT"])

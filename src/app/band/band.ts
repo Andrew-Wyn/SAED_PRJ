@@ -1,5 +1,5 @@
 export interface Band {
-    band_id?: number;
+    id?: number;
     name?: string;
     description?: string;
     band_type?: string;
@@ -9,6 +9,6 @@ export interface Band {
     can_request?: boolean;
     contact_info?: any;
     join_requests?: any[]; // {user_id: number, name: string, rejected: boolean}
-    searching?: boolean;
+    seeking?: boolean;
     rejected?: boolean;
 }

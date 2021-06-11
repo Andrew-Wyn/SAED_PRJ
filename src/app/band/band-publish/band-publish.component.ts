@@ -21,7 +21,7 @@ export class BandPublishComponent implements OnInit {
     name: new FormControl(undefined),
     description: new FormControl(undefined),
     band_type: new FormControl(undefined),
-    searching: new FormControl(undefined),
+    seeking: new FormControl(undefined),
   });
 
   constructor(private bandService: BandService, private location: Location, private userInfoService: UserInfoService, private cd: ChangeDetectorRef) { }
@@ -36,16 +36,17 @@ export class BandPublishComponent implements OnInit {
   save() {
     // create Ad object to load into api
     let newBand = {
-      name: this.bandNewForm.value['names'],
+      name: this.bandNewForm.value['name'],
       description: this.bandNewForm.value['description'],
       band_type: this.bandNewForm.value['band_type'],
-      searching: this.bandNewForm.value['searching']
+      seeking: this.bandNewForm.value['seeking']
     } as Band
 
     this.bandService.addBand(newBand).subscribe(
       response => {
+
         if (this.imageBlob != undefined) {
-          this.bandService.updateBandImage(response.ad_id, this.imageBlob).subscribe(_ => {
+          this.bandService.updateBandImage(response.band_id, this.imageBlob).subscribe(_ => {
             this.goBack();
           });    
         } else {

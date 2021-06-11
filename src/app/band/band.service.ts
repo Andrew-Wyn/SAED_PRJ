@@ -62,7 +62,7 @@ export class BandService {
   updateBand(bandId?: number, band?: Band): Observable<any> {
     console.log(band);
     return this.http.put(`${this.apiURL}bands/${bandId}`, band, this.httpOptions).pipe(
-      tap(_ => console.log(`updated ad id=${band?.band_id}`)),
+      tap(_ => console.log(`updated ad id=${band?.id}`)),
       catchError(this.handleError<any>('updateBand'))
     );  
   }
@@ -70,7 +70,7 @@ export class BandService {
   addBand(band: Band): Observable<any> {
     console.log(band);
     return this.http.post<any>(`${this.apiURL}bands`, band, this.httpOptions).pipe(
-      tap(_ => console.log(`added band w/ id=${band.band_id}`)),
+      tap(_ => console.log(`added band w/ id=${band.id}`)),
       catchError(this.handleError<any>('addBand'))
     );
   }
@@ -103,7 +103,7 @@ export class BandService {
   }
 
   updateBandImage(bandId?: number, imageBlob?: string | ArrayBuffer | null): Observable<any> {    
-    return this.http.put<any>(`${this.apiURL}bands/photos/${bandId}`, imageBlob)
+    return this.http.put<any>(`${this.apiURL}bands/images/${bandId}`, imageBlob)
     .pipe(
       tap(_ => console.log('updated band image')),
       catchError(this.handleError<any>('updateBandImage'))
@@ -111,14 +111,14 @@ export class BandService {
   }
 
   addPreference(bandId?: number): Observable<any> {
-    return this.http.post<any>(`${this.apiURL}bands/interested/${bandId}`, this.httpOptions).pipe(
+    return this.http.put<any>(`${this.apiURL}bands/${bandId}/join_request`, this.httpOptions).pipe(
       tap(_ => console.log(`add band interested id=${bandId}`)),
       catchError(this.handleError<Band>('addPreference'))
     );
   }
 
   deletePreference(bandId?: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiURL}bands/interested/${bandId}`, this.httpOptions).pipe(
+    return this.http.delete<any>(`${this.apiURL}bands/${bandId}/join_request`, this.httpOptions).pipe(
       tap(_ => console.log(`deleted band interested id=${bandId}`)),
       catchError(this.handleError<Band>('deletePreference'))
     );
@@ -132,14 +132,14 @@ export class BandService {
   }
 
   acceptRequest(bandId?: number, userId?: number): Observable<any> {
-    return this.http.post<any>(`${this.apiURL}bands/${bandId}/requests/${userId}`, this.httpOptions).pipe(
+    return this.http.put<any>(`${this.apiURL}bands/${bandId}/join_requests/${userId}`, { accept: true }, this.httpOptions).pipe(
       tap(_ => console.log(`accepted request member id=${userId} of band=${bandId}`)),
       catchError(this.handleError<Band>('acceptRequest'))
     );
   }
 
   declineRequest(bandId?: number, userId?: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiURL}bands/${bandId}/requests/${userId}`, this.httpOptions).pipe(
+    return this.http.put<any>(`${this.apiURL}bands/${bandId}/join_requests/${userId}`, { accept: false }, this.httpOptions).pipe(
       tap(_ => console.log(`declined request member id=${userId} of band=${bandId}`)),
       catchError(this.handleError<Band>('declineRequest'))
     );

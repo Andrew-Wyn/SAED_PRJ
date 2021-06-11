@@ -15,7 +15,7 @@ import * as GLOBALCONFIG from '../../global-config';
 })
 export class BandEditComponent implements OnInit {
 
-  bandsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'bands/photos/';
+  bandsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'bands/images/';
   idBandModify?: number;
   imageBlob?: string | ArrayBuffer | null;
 
@@ -26,15 +26,14 @@ export class BandEditComponent implements OnInit {
     name: new FormControl(undefined),
     description: new FormControl(undefined),
     band_type: new FormControl(undefined),
-    searching: new FormControl(undefined)
+    seeking: new FormControl(undefined)
   });
 
   constructor(private route: ActivatedRoute, private location: Location, private bandService: BandService, private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.idBandModify = JSON.parse(params.get('idAdModifiy') as any);
-      console.log(this.idBandModify);
+      this.idBandModify = JSON.parse(params.get('idBandModify') as any);
       if (this.idBandModify == undefined) {
         this.location.back();
       } else {
@@ -44,7 +43,7 @@ export class BandEditComponent implements OnInit {
               name: band.name,
               description: band.description,
               band_type: band.band_type,
-              searching: band.searching
+              seeking: band.seeking
             });
             this.valid = true;
           }
@@ -60,7 +59,6 @@ export class BandEditComponent implements OnInit {
   save(): void {
     if (this.imageBlob != undefined) {
       this.bandService.updateBandImage(this.idBandModify, this.imageBlob).subscribe(_ => {
-
         this.bandService.updateBand(this.idBandModify, this.bandModifyForm.value).subscribe(
           _ => {
             this.goBack();
