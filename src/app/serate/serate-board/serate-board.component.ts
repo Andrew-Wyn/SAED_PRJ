@@ -66,7 +66,7 @@ export class SerateBoardComponent implements OnInit {
 
   // Push a search term into the observable stream.
   search(): void {
-    this.location.go("/app/bandServ")
+    this.location.go("/app/serate")
     this.serateService.searchBandServs(this.bandServSearchOpt.value as BandServSearchOpt).subscribe(result => {
       this.bandServs$ = result.results;
       console.log("ritornati", this.bandServs$)
