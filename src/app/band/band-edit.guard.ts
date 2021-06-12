@@ -9,7 +9,7 @@ import { UserInfoService } from '../user-info.service';
 })
 export class BandEditGuard implements CanActivate {
 
-  constructor (private userInfoService: UserInfoService, private marketService: MarketService, private router: Router) {}
+  constructor (private userInfoService: UserInfoService, private router: Router) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -19,9 +19,9 @@ export class BandEditGuard implements CanActivate {
 
   check(): boolean | UrlTree {
     // tale controllo è necessario per capire se entro nella pagina senza esserci stato portato dalla UX
-    // in tal caso torno nel market
+    // in tal caso torno nella sezione delle band
     if (this.userInfoService.userInfo == undefined)
-      return this.router.parseUrl('/app/market');
+      return this.router.parseUrl('/app/band');
     return true;
   }
   

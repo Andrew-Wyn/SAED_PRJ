@@ -5,7 +5,9 @@ import { AuthGuard } from './auth.guard'
 import { MarketpublishGuard } from './market/marketpublish.guard'
 import { MarketEditGuard } from './market/market-edit.guard'
 import { BandPublishGuard } from './band/band-publish.guard'
+import { BandEditGuard } from './band/band-edit.guard'
 import { SeratePublishGuard } from './serate/serate-publish.guard';
+import { SerateEditGuard } from './serate/serate-edit.guard';
 import { LoginGuard } from './login.guard'
 
 import { LoginComponent } from './login/login.component'
@@ -55,7 +57,7 @@ const routes: Routes = [
       },
       {
         path: 'bandEdit',
-        component: BandEditComponent, canActivate: [BandPublishGuard]
+        component: BandEditComponent, canActivate: [BandEditGuard]
       },
       {
         path: 'bandPublish',
@@ -67,7 +69,7 @@ const routes: Routes = [
       },
       {
         path: 'serateEdit',
-        component: SerateEditComponent, canActivate: [SeratePublishGuard]
+        component: SerateEditComponent, canActivate: [SerateEditGuard]
       },
       {
         path: 'seratePublish',

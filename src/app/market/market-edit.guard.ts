@@ -9,7 +9,7 @@ import { MarketService } from './market.service';
 })
 export class MarketEditGuard implements CanActivate {
 
-  constructor (private userInfoService: UserInfoService, private marketService: MarketService, private router: Router) {}
+  constructor (private userInfoService: UserInfoService, private router: Router) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
