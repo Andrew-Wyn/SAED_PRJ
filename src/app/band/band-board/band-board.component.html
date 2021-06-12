@@ -35,8 +35,8 @@
             <p><b>Proprietario:</b>&nbsp;{{band.owner}}</p>
             <p><b>Descrizione:</b>&nbsp;{{band.description}}</p>
             <p><b>Tipo:</b>&nbsp;{{band.band_type}}</p>
-            <div class="members">
-                <b *ngIf="band.members && band.members.length != 0">Membri</b>
+            <div *ngIf="band.members && band.members.length != 0" class="members">
+                <b>Membri</b>
                 <div *ngFor="let member of band.members">
                     {{member.name}}&nbsp;<button *ngIf="band.own" (click)="deleteMember(band.id, member.user_id)">elimina</button>
                 </div>
@@ -61,7 +61,8 @@
             </div>
             <div>
                 <span *ngIf="band.own">
-                    <b *ngIf="band.join_requests && band.join_requests.length > 0">Richieste</b>
+                    <span *ngIf="band.join_requests && band.join_requests.length > 0">
+                        <b>Richieste</b>
                         <div *ngFor="let request of band.join_requests">
                             <span *ngIf="request.rejected">
                                 {{request.name}}
@@ -70,6 +71,7 @@
                                 {{request.name}}&nbsp;<button (click)="acceptRequest(band.id, request.user_id)">Accetta</button>&nbsp;<button (click)="declineRequest(band.id, request.user_id)">Declina</button>
                             </span>
                         </div>
+                    </span>
                     <a [routerLink]="['/app/bandEdit', { idBandModify: band.id | json }]"><button>Modifica Band</button></a>
                     &nbsp;
                     <button (click)="delete(band.id)">Elimina Band</button>

@@ -20,15 +20,14 @@ export class SerateBoardComponent implements OnInit {
 
   bandServs$: BandServ[] = [];
 
-  bandServsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'bandservs/photos/';
+  bandServsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'bandservs/images/';
 
   bandServSearchOpt = new FormGroup({
     name: new FormControl(undefined),
-    band_type: new FormControl(undefined),
+    type: new FormControl(undefined),
     description: new FormControl(undefined),
-    date: new FormControl(undefined),
-    start: new FormControl(undefined),
-    end: new FormControl(undefined)
+    min_date: new FormControl(undefined),
+    max_date: new FormControl(undefined),
   });
 
   constructor(private serateService: SerateService, public userInfoService: UserInfoService) { }
@@ -48,8 +47,8 @@ export class SerateBoardComponent implements OnInit {
   // Push a search term into the observable stream.
   search(): void {
     this.serateService.searchBandServs(this.bandServSearchOpt.value as BandServSearchOpt).subscribe(result => {
-      console.log(result.results);
       this.bandServs$ = result.results;
+      console.log("ritornati", this.bandServs$)
     })
   }
 

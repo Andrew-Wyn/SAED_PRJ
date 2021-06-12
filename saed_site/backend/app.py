@@ -862,8 +862,8 @@ def set_band_image(band_id):
 @connect(db=MAIN_DB)
 def add_band_service():
     cur = db.cursor()
-    start_date = datetime.combine(date, start_time)
-    end_date = datetime.combine(date, end_time)
+    start_date = datetime.combine(json.date, json.start_time)
+    end_date = datetime.combine(json.date, json.end_time)
     if end_date <= start_date:
         end_date += timedelta(days=1)
     cur.execute(
@@ -876,10 +876,10 @@ def add_band_service():
 @with_session
 @with_json(name=is_a(str), description=is_a(str), band_type=is_a(str), date=date.fromisoformat, start_time=time.fromisoformat, end_time=time.fromisoformat)
 @connect(db=MAIN_DB)
-def update_band_service():
+def update_band_service(service_id):
     cur = db.cursor()
-    start_date = datetime.combine(date, start_time)
-    end_date = datetime.combine(date, end_time)
+    start_date = datetime.combine(json.date, json.start_time)
+    end_date = datetime.combine(json.date, json.end_time)
     if end_date <= start_date:
         end_date += timedelta(days=1)
     cur.execute(
@@ -899,9 +899,9 @@ def make_band_service_object(db, record, user_id):
         "owner": record.owner_name,
         "band_type": record.band_type,
         "description": record.description,
-        "date": record.start_date.date().isoformat(),
-        "start": record.start_date.time().isoformat(),
-        "end": record.end_date.time().isoformat(),
+        "date": datetime.fromisoformat(record.start_date).date().isoformat(),
+        "start_time": datetime.fromisoformat(record.start_date).time().isoformat(),
+        "end_time": datetime.fromisoformat(record.end_date).time().isoformat(),
         "can_edit": record.owner == user_id,
         "contanct_info": None
     }
@@ -923,7 +923,7 @@ def get_band_service(service_id):
                bs.owner, users.name, users.email, users.phone_number, bsi.user_id
         FROM band_services AS bs
              JOIN users ON bs.owner = users.id
-             LEFT JOIN band_services_intersted AS bsi ON bsi.band_service_id = bs.id AND bsi.user_id = ?
+             LEFT JOIN band_services_interested AS bsi ON bsi.band_service_id = bs.id AND bsi.user_id = ?
         WHERE bs.id = ?
         """, (user_id, service_id))
     result = cur.fetchone()
@@ -943,13 +943,13 @@ def end_of_day(s):
 @app.route(f"{API_PATH}/band_services")
 @with_session
 @connect(db=MAIN_DB)
-def query_band_service(service_id):
+def query_band_service():
     query = QueryGenerator(db, """
         SELECT bs.id, bs.name, bs.band_type, bs.description, bs.service_start, bs.service_end,
                bs.owner, users.name, users.email, users.phone_number, bsi.user_id
         FROM band_services AS bs
              JOIN users ON bs.owner = users.id
-             LEFT JOIN band_services_intersted AS bsi ON bsi.band_service_id = bs.id AND bsi.user_id = ?
+             LEFT JOIN band_services_interested AS bsi ON bsi.band_service_id = bs.id AND bsi.user_id = ?
         """, (user_id,))
     checks = (
         ("bs.name LIKE '%'||?||'%'", "name", identity),

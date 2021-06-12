@@ -23,8 +23,8 @@ export class SeratePublishComponent implements OnInit {
     description: new FormControl(undefined),
     date: new FormControl(undefined),
     band_type: new FormControl(undefined),
-    start: new FormControl(undefined),
-    end: new FormControl(undefined)
+    start_time: new FormControl(undefined),
+    end_time: new FormControl(undefined)
   });
 
   constructor(private serateService: SerateService, private location: Location, private userInfoService: UserInfoService, private cd: ChangeDetectorRef) { }
@@ -38,19 +38,24 @@ export class SeratePublishComponent implements OnInit {
 
   save() {
     // create Ad object to load into api
-    let newAd = {
+    let newBandServ = {
       name: this.bandServNewForm.value['name'],
       description: this.bandServNewForm.value['description'],
-      date: this.bandServNewForm.value['date'], // TODO: convertire data in stringa
+      date: this.bandServNewForm.value['date'],
       band_type: this.bandServNewForm.value['band_type'],
-      start: this.bandServNewForm.value['start'],
-      end: this.bandServNewForm.value['end']
+      start_time: this.bandServNewForm.value['start_time'],
+      end_time: this.bandServNewForm.value['end_time']
     } as BandServ
 
-    this.serateService.addBandServ(newAd).subscribe(
+
+    this.serateService.addBandServ(newBandServ).subscribe(
       response => {
         if (this.imageBlob != undefined) {
-          this.serateService.updateBandServImage(response.band_serv_id, this.imageBlob).subscribe(_ => {
+          this.serateService.updateBandServImage(response.id, this.imageBlob).subscribe(_ => {
+            this.goBack();
+          },
+          (error) => {
+            console.log(error);
             this.goBack();
           });    
         } else {

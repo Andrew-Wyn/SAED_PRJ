@@ -7,24 +7,20 @@
                 <input type="text" id="name" formControlName="name" placeholder="nome ...">
             </div>
             <div>
-                <label for="band_type">Tipo Banda: </label>
-                <input type="text" id="band_type" formControlName="band_type" placeholder="tipo banda ...">
+                <label for="type">Tipo Banda: </label>
+                <input type="text" id="type" formControlName="type" placeholder="tipo banda ...">
             </div>
             <div>
                 <label for="description">Descrizione: </label>
                 <input type="text" id="description" formControlName="description" placeholder="descrizione ...">
             </div>
             <div>
-                <label for="date">Data: </label>
-                <input type="date" id="date" formControlName="date">
+                <label for="min_date">Data: </label>
+                <input type="date" id="min_date" formControlName="min_date">
             </div>
             <div>
-                <label for="start">Inizio: </label>
-                <input type="text" id="start" formControlName="start" placeholder="hh:mm">
-            </div>
-            <div>
-                <label for="end">Fine: </label>
-                <input type="text" id="end" formControlName="end" placeholder="hh:mm">
+                <label for="max_date">Data: </label>
+                <input type="date" id="max_date" formControlName="max_date">
             </div>
         </div>
         <button>search</button>
@@ -36,10 +32,10 @@
         <div class="card-obj">
             <div><h2>{{bandServ.name}}</h2></div>
                 <img class="photo" [src]="bandServsImageUrl + bandServ.band_serv_id"/>
-            <p><b>Descrizione:</b>&nbsp;{{bandServ.description}} &euro;</p>
-            <p><b>Data:</b>&nbsp;{{bandServ.date}} &euro;</p>
-            <p><b>Orario Inizio:</b>&nbsp;{{bandServ.start}} &euro;</p>
-            <p><b>Orario Fine:</b>&nbsp;{{bandServ.end}} &euro;</p>
+            <p><b>Descrizione:</b>&nbsp;{{bandServ.description}}</p>
+            <p><b>Data:</b>&nbsp;{{bandServ.date}}</p>
+            <p><b>Orario Inizio:</b>&nbsp;{{bandServ.start_time}}</p>
+            <p><b>Orario Fine:</b>&nbsp;{{bandServ.end_time}}</p>
             <p><b>Tipo di Band:</b>&nbsp;{{bandServ.band_type}}</p>
             <div class="organizer-info" *ngIf="bandServ.contact_info != null; else nouserinfo">
                 <h2>Informazioni sull'Organizzatore</h2>
@@ -52,7 +48,7 @@
             <ng-template #nouserinfo>
                 <div>
                     <span *ngIf="bandServ.can_edit; else notmine">
-                        <a [routerLink]="['/app/serateEdit', { idBandServModifiy: bandServ.band_serv_id  | json }]"><button>Modifica Annuncio</button></a>
+                        <a [routerLink]="['/app/serateEdit', { idBandServModify: bandServ.band_serv_id  | json }]"><button>Modifica Annuncio</button></a>
                         &nbsp;
                         <button (click)="delete(bandServ.band_serv_id)">Elimina Serata</button>
                     </span>

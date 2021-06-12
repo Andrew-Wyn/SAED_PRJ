@@ -45,7 +45,7 @@ export class SerateService {
 
 
   getBandServs(): Observable<BandServ[]> {
-    return this.http.get<BandServ[]>(`${this.apiURL}band_servs`)
+    return this.http.get<BandServ[]>(`${this.apiURL}band_services`)
     .pipe(
       tap(_ => console.log('fetched band service')),
       catchError(this.handleError<BandServ[]>('getBandServs', []))
@@ -53,7 +53,7 @@ export class SerateService {
   }
 
   getBandServ(bandServId?: number): Observable<BandServ> {
-    const url = `${this.apiURL}band_servs/${bandServId}`;
+    const url = `${this.apiURL}band_services/${bandServId}`;
     return this.http.get<BandServ>(url).pipe(
       tap(_ => console.log(`fetched band service id=${bandServId}`)),
       catchError(this.handleError<BandServ>(`getBandServ id=${bandServId}`))
@@ -62,7 +62,7 @@ export class SerateService {
 
   updateBandServ(bandServId?: number, bandServ?: BandServ): Observable<any> {
     console.log(bandServ);
-    return this.http.put(`${this.apiURL}band_servs/${bandServId}`, bandServ, this.httpOptions).pipe(
+    return this.http.put(`${this.apiURL}band_services/${bandServId}`, bandServ, this.httpOptions).pipe(
       tap(_ => console.log(`updated band service id=${bandServ?.band_serv_id}`)),
       catchError(this.handleError<any>('updateBandServ'))
     );  
@@ -70,14 +70,14 @@ export class SerateService {
 
   addBandServ(bandServ: BandServ): Observable<any> {
     console.log(bandServ);
-    return this.http.post<any>(`${this.apiURL}band_servs`, bandServ, this.httpOptions).pipe(
+    return this.http.post<any>(`${this.apiURL}band_services`, bandServ, this.httpOptions).pipe(
       tap((bandServ: any) => console.log(`added band service w/ id=${bandServ.band_serv_id}`)),
       catchError(this.handleError<any>('addBandServ'))
     );
   }
 
   deleteBandServ(bandServId?: number): Observable<BandServ> {
-    return this.http.delete<BandServ>(`${this.apiURL}band_servs/${bandServId}`, this.httpOptions).pipe(
+    return this.http.delete<BandServ>(`${this.apiURL}band_services/${bandServId}`, this.httpOptions).pipe(
       tap(_ => console.log(`deleted band service id=${bandServId}`)),
       catchError(this.handleError<BandServ>('deleteBandServ'))
     );
@@ -94,8 +94,8 @@ export class SerateService {
 
     let tree = this.router.createUrlTree(["/"], { queryParams: terms });
     let serializedTree = this.serializer.serialize(tree).split("/")[1]
-    console.log(`${this.apiURL}band_servs${serializedTree}`);
-    return this.http.get<any>(`${this.apiURL}band_servs${serializedTree}`).pipe(
+    console.log(`${this.apiURL}band_services${serializedTree}`);
+    return this.http.get<any>(`${this.apiURL}band_services${serializedTree}`).pipe(
       tap(x => x.length ?
         console.log(`found band services matching`) :
         console.log(`no band services matching`, x)),
@@ -104,7 +104,7 @@ export class SerateService {
   }
 
   updateBandServImage(bandServId?: number, imageBlob?: string | ArrayBuffer | null): Observable<any> {    
-    return this.http.put<any>(`${this.apiURL}band_servs/photos/${bandServId}`, imageBlob)
+    return this.http.put<any>(`${this.apiURL}band_services/images/${bandServId}`, imageBlob)
     .pipe(
       tap(_ => console.log('updated user image')),
       catchError(this.handleError<any>('updateUserImage'))
@@ -112,14 +112,14 @@ export class SerateService {
   }
 
   addPreference(bandServId?: number): Observable<any> {
-    return this.http.post<any>(`${this.apiURL}band_servs/interested/${bandServId}`, this.httpOptions).pipe(
+    return this.http.post<any>(`${this.apiURL}band_services/interested/${bandServId}`, this.httpOptions).pipe(
       tap(_ => console.log(`deleted ad interested id=${bandServId}`)),
       catchError(this.handleError<any>('deletePreference'))
     );
   }
 
   deletePreference(bandServId?: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiURL}band_servs/interested/${bandServId}`, this.httpOptions).pipe(
+    return this.http.delete<any>(`${this.apiURL}band_services/interested/${bandServId}`, this.httpOptions).pipe(
       tap(_ => console.log(`deleted ad interested id=${bandServId}`)),
       catchError(this.handleError<any>('deletePreference'))
     );

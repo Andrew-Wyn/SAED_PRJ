@@ -27,15 +27,15 @@ export class SerateEditComponent implements OnInit {
     band_type: new FormControl(undefined),
     description: new FormControl(undefined),
     date: new FormControl(undefined),
-    start: new FormControl(undefined),
-    end: new FormControl(undefined)
+    start_time: new FormControl(undefined),
+    end_time: new FormControl(undefined)
   });
 
   constructor(private route: ActivatedRoute, private location: Location, private serateService: SerateService, private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.idBandServModify = JSON.parse(params.get('idAdModifiy') as any);
+      this.idBandServModify = JSON.parse(params.get('idBandServModify') as any);
       console.log(this.idBandServModify);
       if (this.idBandServModify == undefined) {
         this.location.back();
@@ -46,8 +46,8 @@ export class SerateEditComponent implements OnInit {
               name: bandServ.name,
               band_type: bandServ.band_type,
               date: bandServ.date, // TODO: convert date to string
-              start: bandServ.start,
-              end: bandServ.end,
+              start_time: bandServ.start_time,
+              end_time: bandServ.end_time,
               description: bandServ.description
             });
             this.valid = true;

@@ -1,8 +1,7 @@
 export interface BandServSearchOpt {
     name?: string;
-    band_type?: string;
+    type?: string;
     description?: string;
-    date?: string;
-    start?: string;
-    end?: string;
+    min_date?: string;
+    max_date?: string;
 }
