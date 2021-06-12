@@ -582,7 +582,7 @@ def signal_interest(ad_id):
     except IntegrityError:
         pass
     else:
-        create_notification(db, owner, f'An user is interested into your ad: "{title}"', picture_url=f"/saed/api/user_image/{user_id}")
+        create_notification(db, owner, f'An user is interested into your ad: "{title}"', action_url=f"ad;{ad_id}", picture_url=f"/saed/api/user_image/{user_id}")
     return {}
 
 
@@ -595,7 +595,7 @@ def revoke_interest(ad_id):
     (owner, title) = cur.fetchone()
     cur.execute("DELETE FROM ads_interested WHERE ad_id = ? AND user_id = ?", (ad_id, user_id))
     if cur.rowcount:
-        create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', picture_url=f"/saed/api/user_image/{user_id}")
+        create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', action_url=f"ad;{ad_id}", picture_url=f"/saed/api/user_image/{user_id}")
     return {}
 
 
@@ -674,7 +674,7 @@ def send_band_join_request(band_id):
     except IntegrityError:
         pass
     else:
-        create_notification(db, owner, f'A musician wants to join your band: "{name}"', picture_url=f"/saed/api/bands/images/{band_id}")
+        create_notification(db, owner, f'A musician wants to join your band: "{name}"', action_url=f"band;{band_id}", picture_url=f"/saed/api/bands/images/{band_id}")
     return {}
 
 
@@ -693,8 +693,8 @@ def accept_band_join_request(db, band_id, applicant_id):
     if not modified(cur):
         return api_error(404, "Not found")
     cur.execute("INSERT INTO band_members(user_id, band_id) VALUES (?, ?)", (applicant_id, band_id))
-    band_name, _, _, owner, _ = band_info(db, band_id)
-    create_notification(db, owner, f'You have been accepted into a band "{band_name}"', picture_url=f"/saed/api/band_image/{band_id}")
+    band_name, _, _, _, _ = band_info(db, band_id)
+    create_notification(db, applicant_id, f'You have been accepted into a band "{band_name}"', action_url=f"band;{band_id}", picture_url=f"/saed/api/band_image/{band_id}")
     return {}
 
 
@@ -705,8 +705,8 @@ def reject_band_join_request(db, band_id, applicant_id):
             (band_id, applicant_id))
     if not modified(cur):
         return api_error(404, "Not found")
-    band_name, _, _, owner, _ = band_info(db, band_id)
-    create_notification(db, owner, f'Your application for the band "{band_name}" has been rejected', picture_url=f"/saed/api/band_image/{band_id}")
+    band_name, _, _, _, _ = band_info(db, band_id)
+    create_notification(db, applicant_id, f'Your application for the band "{band_name}" has been rejected', action_url=f"band;{band_id}", picture_url=f"/saed/api/band_image/{band_id}")
     return {}
 
 

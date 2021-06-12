@@ -60,7 +60,7 @@ export class MarketBoardComponent implements OnInit {
   // Push a search term into the observable stream.
   search(): void {
     // eliminate url params id from notification calls
-    this.location.replaceState("/app/market");
+    this.location.go("/app/market");
     this.marketService.searchAds(this.adSearchOpt.value as AdSearchOpt).subscribe(result => {
       console.log(result.results);
       this.ads$ = result.results;

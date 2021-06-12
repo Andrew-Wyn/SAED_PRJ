@@ -19,6 +19,8 @@ import { Router } from '@angular/router';
 })
 export class HeaderComponent implements OnInit {
 
+  private componentMap: {[key: string]: string} = {ad: "market", band: "band", band_service: "bandServ"}
+
   /**
    * Handle Http operation that failed.
    * Let the app continue.
@@ -75,7 +77,13 @@ export class HeaderComponent implements OnInit {
     this.authService.logout()
   }
 
-  actionNotify(action_url: any) {
-    this.router.navigate(['/app/market', { id: 2 }]);
+  actionNotify(action_url: string) { // action_url = "type;id"
+    if (action_url == null) {
+      return
+    }
+    let component = this.componentMap[action_url.split(";")[0]]
+    let idObj = action_url.split(";")[1]
+    console.log(component, idObj)
+    this.router.navigate(['/app/'+component, { id: idObj }]);
   }
 }

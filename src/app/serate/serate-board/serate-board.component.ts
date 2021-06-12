@@ -10,6 +10,8 @@ import { BandServ } from '../bandServ'
 import { BandServSearchOpt } from '../bandServSearchOpt'
 
 import * as GLOBALCONFIG from '../../global-config'
+import { Location } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-serate-board',
@@ -30,9 +32,21 @@ export class SerateBoardComponent implements OnInit {
     max_date: new FormControl(undefined),
   });
 
-  constructor(private serateService: SerateService, public userInfoService: UserInfoService) { }
+  constructor(
+    private serateService: SerateService,
+    private location: Location,
+    private route: ActivatedRoute,
+    public userInfoService: UserInfoService) { }
+    
   ngOnInit(): void {
-    this.search();
+    this.route.paramMap.subscribe(params => {
+      let id = JSON.parse(params.get('id') as any) as number;
+      if (id != null){
+        this.searchSingleBandServ(id);
+      } else {
+        this.search();
+      }
+    });
   }
 
   private updateBandServs(band_serv_id?: number) {
@@ -44,8 +58,15 @@ export class SerateBoardComponent implements OnInit {
 
   }
 
+  searchSingleBandServ(idObj: number) {
+    this.serateService.getBandServ(idObj).subscribe(bendServ => {
+      this.bandServs$ = [bendServ]
+    });
+  }
+
   // Push a search term into the observable stream.
   search(): void {
+    this.location.go("/app/bandServ")
     this.serateService.searchBandServs(this.bandServSearchOpt.value as BandServSearchOpt).subscribe(result => {
       this.bandServs$ = result.results;
       console.log("ritornati", this.bandServs$)

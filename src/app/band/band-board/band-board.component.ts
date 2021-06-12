@@ -8,6 +8,8 @@ import {BandSearchOpt} from '../bandSearchOpt'
 import { Band } from '../band'
 
 import * as GLOBALCONFIG from '../../global-config'
+import { Location } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-band-board',
@@ -26,10 +28,21 @@ export class BandBoardComponent implements OnInit {
     seeking: new FormControl(undefined)
   });
 
-  constructor(private bandService: BandService, public userInfoService: UserInfoService) { }
+  constructor(
+    private bandService: BandService,
+    private location: Location,
+    private route: ActivatedRoute,
+    public userInfoService: UserInfoService) { }
 
   ngOnInit(): void {
-    this.search();
+    this.route.paramMap.subscribe(params => {
+      let id = JSON.parse(params.get('id') as any) as number;
+      if (id != null){
+        this.searchSingleBand(id);
+      } else {
+        this.search();
+      }
+    });
   }
 
   private updateBandList(band_id?: number) {
@@ -39,7 +52,14 @@ export class BandBoardComponent implements OnInit {
     });
   }
 
+  searchSingleBand(idObj: number) {
+    this.bandService.getBand(idObj).subscribe(band => {
+      this.bands$ = [band]
+    });
+  }
+
   search(): void {
+    this.location.go("/app/band");
     console.log(this.bandSearchOpt.value)
     this.bandService.searchBands(this.bandSearchOpt.value as BandSearchOpt).subscribe(result => {
       console.log(result.results);
