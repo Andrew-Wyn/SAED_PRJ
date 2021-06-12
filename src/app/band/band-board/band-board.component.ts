@@ -40,6 +40,7 @@ export class BandBoardComponent implements OnInit {
   }
 
   search(): void {
+    console.log(this.bandSearchOpt.value)
     this.bandService.searchBands(this.bandSearchOpt.value as BandSearchOpt).subscribe(result => {
       console.log(result.results);
       this.bands$ = result.results;

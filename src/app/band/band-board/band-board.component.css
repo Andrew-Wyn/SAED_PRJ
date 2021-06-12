@@ -35,4 +35,41 @@ h2 {
     background-color: rgba(255, 0, 0, 0.3);
     border: 2px solid red;
     margin: 5px;
+    margin-left: 25%;
+    margin-right: 25%;
 }
+
+.seeking {
+    margin: 5px;
+    padding: 5px;
+    color: blue;
+}
+
+.card-section {
+    margin: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    margin-left: 25%;
+    margin-right: 25%;
+}
+
+.members {    
+    border: 2px solid green;
+    background-color: rgba(0, 255, 0, 0.3);
+}
+
+.requests {
+    border: 2px solid yellow;
+    background-color: rgba(255, 255, 0, 0.3);
+}
+
+.rejected {
+    border: 2px solid grey;
+    background-color: rgba(123, 123, 123, 0.3);
+}
+
+.pending {
+    border: 2px solid blue;
+    background-color: rgba(0, 0, 255, 0.3);
+}
+

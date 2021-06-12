@@ -620,13 +620,13 @@ def band_info(db, band_id):
 
 @app.route(f"{API_PATH}/bands", methods=["POST"])
 @with_session
-@with_json(name=is_a(str), description=is_a(str), band_type=is_a(str))
+@with_json(name=is_a(str), description=is_a(str), band_type=is_a(str), seeking=is_a(bool))
 @connect(db=MAIN_DB)
 def add_band():
     cur = db.cursor()
     cur.execute(
             f"INSERT INTO bands(name, description, band_type, owner, seeking) VALUES ({qmarks(5)})",
-            (json.name, json.description, json.band_type, user_id, False))
+            (json.name, json.description, json.band_type, user_id, json.seeking))
     return {"band_id": cur.lastrowid}
 
 
