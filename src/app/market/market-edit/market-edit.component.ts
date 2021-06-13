@@ -56,7 +56,7 @@ export class MarketEditComponent implements OnInit {
   }
 
   goBack(): void {
-    this.location.back();
+    this.location.go("/app/market");
   }
 
   save(): void {

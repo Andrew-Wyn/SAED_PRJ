@@ -30,7 +30,7 @@ export class BandPublishComponent implements OnInit {
   }
 
   goBack() {
-    this.location.back();
+    this.location.go("/app/band");
   }
 
   save() {

@@ -58,7 +58,7 @@ export class SerateEditComponent implements OnInit {
   }
 
   goBack(): void {
-    this.location.back();
+    this.location.go("/app/serate");
   }
 
   save(): void {

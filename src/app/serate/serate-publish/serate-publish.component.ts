@@ -33,7 +33,7 @@ export class SeratePublishComponent implements OnInit {
   }
 
   goBack() {
-    this.location.back();
+    this.location.go("/app/serate");
   }
 
   save() {

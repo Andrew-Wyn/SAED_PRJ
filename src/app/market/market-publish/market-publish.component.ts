@@ -31,7 +31,7 @@ export class MarketPublishComponent implements OnInit {
   }
 
   goBack() {
-    this.location.back();
+    this.location.go("/app/market");
   }
 
   save() {

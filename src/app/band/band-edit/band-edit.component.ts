@@ -53,7 +53,7 @@ export class BandEditComponent implements OnInit {
   }
 
   goBack(): void {
-    this.location.back();
+    this.location.go("/app/band");
   }
 
   save(): void {
