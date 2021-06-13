@@ -38,6 +38,7 @@ SUPPORTED_IMAGE_TYPES = {
     "gif": "image/gif",
     "webp": "image/webp"
 }
+DEFAULT_IMAGE_PATH = "default.png"
 
 ad_types = "Locale", "Band", "Musicista", "Strumento"
 user_info_columns = "email", "name", "given_name", "family_name", "musician", "instrument_supplier", "club_owner"
@@ -189,6 +190,14 @@ def with_session(f):
         with bindings(f, user_id=user_id):
             return f(*args, **kwargs)
     return wrapper
+
+
+def parse_bool(s):
+    if s.casefold() == "true":
+        return True
+    if s.casefold() == "false":
+        return False
+    raise ValueError
 
 
 price_re = re.compile(r"(?P<units>\d+)(\.(?P<cents>\d\d))?")
@@ -354,6 +363,18 @@ def set_user_info():
     return {}
 
 
+def compute_mime(image):
+    try:
+        return SUPPORTED_IMAGE_TYPES[imghdr.what(None, default_image)]
+    except KeyError as e:
+        raise ValueError from e
+
+
+with open(DEFAULT_IMAGE_PATH, "rb") as f:
+    default_image = f.read()
+default_image_mime = compute_mime(default_image)
+
+
 def get_image(img_db, with_external_url, table, id_value):
     cur = img_db.cursor()
     cur.execute(f"SELECT image, mime FROM {table} WHERE id = ? AND image IS NOT NULL", (id_value,))
@@ -361,14 +382,13 @@ def get_image(img_db, with_external_url, table, id_value):
     if result is not None:
         image, mime = result
         return Response(image, mimetype=mime)
-    if not with_external_url:
-        return api_error(404, "Not found")
-    cur.execute(f"SELECT external_url FROM {table} WHERE id = ? AND external_url IS NOT NULL", (id_value,))
-    result = cur.fetchone()
-    if result is None:
-        return api_error(404, "Not found")
-    (external_url,) = result
-    return redirect(external_url)
+    if with_external_url:
+        cur.execute(f"SELECT external_url FROM {table} WHERE id = ? AND external_url IS NOT NULL", (id_value,))
+        result = cur.fetchone()
+        if result is not None:
+            (external_url,) = result
+            return redirect(external_url)
+    return Response(default_image, default_image_mime)
 
 
 def set_image(img_db, with_external_url, table, id_value, max_size):
@@ -376,8 +396,8 @@ def set_image(img_db, with_external_url, table, id_value, max_size):
         return api_error(413, "Payload too large")
     new_image = request.get_data(cache=False)
     try:
-        mime = SUPPORTED_IMAGE_TYPES[imghdr.what(None, new_image)]
-    except KeyError:
+        mime = compute_mime(new_image)
+    except ValueError:
         return api_error(415, "Unsupported image type")
     cur = img_db.cursor()
     cur.execute(f"SELECT count(*) FROM {table} WHERE id = ?", (id_value,))
@@ -571,10 +591,13 @@ def set_ad_image(ad_id):
 @app.route(f"{API_PATH}/ads/interested/<int:ad_id>", methods=["POST"])
 @with_session
 @connect(db=MAIN_DB)
-def signal_interest(ad_id):
+def signal_ad_interest(ad_id):
     cur = db.cursor()
     cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
-    (owner, title) = cur.fetchone()
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "Not found")
+    owner, title = result
     if owner == user_id:
         return api_error(418, "I'm a teapot")
     try:
@@ -589,10 +612,13 @@ def signal_interest(ad_id):
 @app.route(f"{API_PATH}/ads/interested/<int:ad_id>", methods=["DELETE"])
 @with_session
 @connect(db=MAIN_DB)
-def revoke_interest(ad_id):
+def revoke_ad_interest(ad_id):
     cur = db.cursor()
     cur.execute("SELECT owner, title FROM ads WHERE id = ?", (ad_id,))
-    (owner, title) = cur.fetchone()
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "Not found")
+    owner, title = result
     cur.execute("DELETE FROM ads_interested WHERE ad_id = ? AND user_id = ?", (ad_id, user_id))
     if cur.rowcount:
         create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', action_url=f"ad;{ad_id}", picture_url=f"/saed/api/user_image/{user_id}")
@@ -616,6 +642,12 @@ def band_info(db, band_id):
     cur.execute("SELECT name, description, band_type, owner, seeking FROM bands WHERE id = ?", (band_id,))
     result = cur.fetchone()
     return result
+
+
+def is_service_owner(db, user_id, service_id):
+    cur = db.cursor()
+    cur.execute("SELECT NULL FROM band_services WHERE id = ? AND owner = ?", (service_id, user_id))
+    return cur.fetchone() is not None
 
 
 @app.route(f"{API_PATH}/bands", methods=["POST"])
@@ -694,7 +726,7 @@ def accept_band_join_request(db, band_id, applicant_id):
         return api_error(404, "Not found")
     cur.execute("INSERT INTO band_members(user_id, band_id) VALUES (?, ?)", (applicant_id, band_id))
     band_name, _, _, _, _ = band_info(db, band_id)
-    create_notification(db, applicant_id, f'You have been accepted into a band "{band_name}"', action_url=f"band;{band_id}", picture_url=f"/saed/api/band_image/{band_id}")
+    create_notification(db, applicant_id, f'You have been accepted into a band "{band_name}"', action_url=f"band;{band_id}", picture_url=f"/saed/api/bands/images/{band_id}")
     return {}
 
 
@@ -706,7 +738,7 @@ def reject_band_join_request(db, band_id, applicant_id):
     if not modified(cur):
         return api_error(404, "Not found")
     band_name, _, _, _, _ = band_info(db, band_id)
-    create_notification(db, applicant_id, f'Your application for the band "{band_name}" has been rejected', action_url=f"band;{band_id}", picture_url=f"/saed/api/band_image/{band_id}")
+    create_notification(db, applicant_id, f'Your application for the band "{band_name}" has been rejected', action_url=f"band;{band_id}", picture_url=f"/saed/api/bands/images/{band_id}")
     return {}
 
 
@@ -816,6 +848,7 @@ def query_bands():
         ("bands.description LIKE '%'||?||'%'", "description", identity),
         ("bands.band_type LIKE '%'||?||'%'", "type", identity),
         ("users.name LIKE '%'||?||'%'", "owner", identity)
+        ("bands.seeking = ?", "seeking", parse_bool)
     )
     for check, arg, validator in checks:
         try:
@@ -888,6 +921,16 @@ def update_band_service(service_id):
     return modified_or_error(cur, 401, "Unauthorized")
 
 
+@app.route(f"{API_PATH}/band_services/<int:service_id>", methods=["DELETE"])
+@with_session
+@connect(db=MAIN_DB)
+def delete_band_service(service_id):
+    cur = db.cursor()
+    cur.execute("DELETE FROM band_services WHERE id = ? AND owner = ?", (service_id, user_id))
+    if not modified(cur):
+        return api_error(401, "Unauthorized")
+
+
 BandServiceRecord = namedtuple("BandServiceRecord", "service_id name band_type description start_date end_date owner owner_name owner_email owner_phone interested_user_id")
 
 
@@ -957,7 +1000,7 @@ def query_band_service():
         ("bs.band_type LIKE '%'||?||'%'", "type", identity),
         ("users.name LIKE '%'||?||'%'", "owner", identity),
         ("bs.service_start >= ?", "min_date", start_of_day),
-        ("bs.service_start <= ?", "max_date", end_of_day)
+        ("bs.service_start <= ?", "max_date", end_of_day),
     )
     for check, arg, validator in checks:
         try:
@@ -980,6 +1023,43 @@ def query_band_service():
         "pages": iceil(count, page_size),
         "results": results
     }
+
+
+@app.route(f"{API_PATH}/band_services/interested/<int:service_id>", methods=["POST"])
+@with_session
+@connect(db=MAIN_DB)
+def signal_service_interest(service_id):
+    cur = db.cursor()
+    cur.execute("SELECT owner, title FROM band_services WHERE id = ?", (service_id,))
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "Not found")
+    owner, title = result
+    if owner == user_id:
+        return api_error(418, "I'm a teapot")
+    try:
+        cur.execute("INSERT INTO band_services_interested(band_service_id, user_id) VALUES (?, ?)", (service_id, user_id))
+    except IntegrityError:
+        pass
+    else:
+        create_notification(db, owner, f'An user is interested into your service: "{title}"', action_url=f"band_service;{service_id}", picture_url=f"/saed/api/band_services/images/{user_id}")
+    return {}
+
+
+@app.route(f"{API_PATH}/band_services/interested/<int:service_id>", methods=["DELETE"])
+@with_session
+@connect(db=MAIN_DB)
+def revoke_service_interest(service_id):
+    cur = db.cursor()
+    cur.execute("SELECT owner, title FROM band_services WHERE id = ?", (service_id,))
+    result = cur.fetchone()
+    if result is None:
+        return api_error(404, "Not found")
+    owner, title = result
+    cur.execute("DELETE FROM band_services_interested WHERE band_service_id = ? AND user_id = ?", (service_id, user_id))
+    if cur.rowcount:
+        create_notification(db, owner, f'An user is not interested anymore into your service: "{title}"', action_url=f"band_service;{service_id}", picture_url=f"/saed/api/band_service/images/{user_id}")
+    return {}
 
 
 @app.route(f"{API_PATH}/band_services/images/<int:service_id>")
