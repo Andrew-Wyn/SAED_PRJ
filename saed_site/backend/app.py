@@ -766,6 +766,17 @@ def delete_band(band_id):
     cur.execute("DELETE FROM band_members WHERE band_id = ?", (band_id,))
 
 
+@app.route(f"{API_PATH}/bands/<int:band_id>/members/<int:member_id>", methods=["DELETE"])
+@with_session
+@connect(db=MAIN_DB)
+def remove_band_member(band_id, member_id):
+    if not user_id == member_id and not is_band_owner(db, user_id, band_id):
+        return api_error(401, "Unauthorized")
+    cur = db.cursor()
+    cur.execute("DELETE FROM band_members WHERE band_id = ? AND user_id = ?", (band_id, member_id))
+    return modified_or_error(cur, 404, "Not found")
+
+
 BandRecord = namedtuple("BandRecord", "band_id name description band_type owner seeking owner_name owner_email owner_phone rejected member_id")
 
 
