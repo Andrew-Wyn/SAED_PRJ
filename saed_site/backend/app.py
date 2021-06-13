@@ -38,7 +38,7 @@ SUPPORTED_IMAGE_TYPES = {
     "gif": "image/gif",
     "webp": "image/webp"
 }
-DEFAULT_IMAGE_PATH = "default.png"
+DEFAULT_IMAGE_PATH = "no_image.png"
 
 ad_types = "Locale", "Band", "Musicista", "Strumento"
 user_info_columns = "email", "name", "given_name", "family_name", "musician", "instrument_supplier", "club_owner"
@@ -622,7 +622,7 @@ def revoke_ad_interest(ad_id):
     cur.execute("DELETE FROM ads_interested WHERE ad_id = ? AND user_id = ?", (ad_id, user_id))
     if cur.rowcount:
         create_notification(db, owner, f'An user is not interested anymore into your ad: "{title}"', action_url=f"ad;{ad_id}", picture_url=f"/saed/api/user_image/{user_id}")
-    return {}
+    return modified_or_error(cur, 401, "Unauthorized")
 
 
 def is_band_owner(db, user_id, band_id):
@@ -718,7 +718,6 @@ def remove_band_join_request(band_id):
     cur.execute("DELETE FROM band_applicants WHERE band_id = ? AND user_id = ? AND NOT rejected", (band_id, user_id))
     return modified_or_error(cur, 401, "Unauthorized")
 
-
 def accept_band_join_request(db, band_id, applicant_id):
     cur = db.cursor()
     cur.execute("DELETE FROM band_applicants WHERE band_id = ? AND user_id = ?", (band_id, applicant_id))
@@ -764,6 +763,7 @@ def delete_band(band_id):
     if not modified(cur):
         return api_error(401, "Unauthorized")
     cur.execute("DELETE FROM band_members WHERE band_id = ?", (band_id,))
+    return modified_or_error(cur, 401, "Unauthorized")
 
 
 @app.route(f"{API_PATH}/bands/<int:band_id>/members/<int:member_id>", methods=["DELETE"])
@@ -858,7 +858,7 @@ def query_bands():
         ("bands.name LIKE '%'||?||'%'", "name", identity),
         ("bands.description LIKE '%'||?||'%'", "description", identity),
         ("bands.band_type LIKE '%'||?||'%'", "type", identity),
-        ("users.name LIKE '%'||?||'%'", "owner", identity)
+        ("users.name LIKE '%'||?||'%'", "owner", identity),
         ("bands.seeking = ?", "seeking", parse_bool)
     )
     for check, arg, validator in checks:
@@ -940,6 +940,7 @@ def delete_band_service(service_id):
     cur.execute("DELETE FROM band_services WHERE id = ? AND owner = ?", (service_id, user_id))
     if not modified(cur):
         return api_error(401, "Unauthorized")
+    return modified_or_error(cur, 401, "Unauthorized")
 
 
 BandServiceRecord = namedtuple("BandServiceRecord", "service_id name band_type description start_date end_date owner owner_name owner_email owner_phone interested_user_id")
@@ -1041,7 +1042,7 @@ def query_band_service():
 @connect(db=MAIN_DB)
 def signal_service_interest(service_id):
     cur = db.cursor()
-    cur.execute("SELECT owner, title FROM band_services WHERE id = ?", (service_id,))
+    cur.execute("SELECT owner, name FROM band_services WHERE id = ?", (service_id,))
     result = cur.fetchone()
     if result is None:
         return api_error(404, "Not found")
@@ -1062,7 +1063,7 @@ def signal_service_interest(service_id):
 @connect(db=MAIN_DB)
 def revoke_service_interest(service_id):
     cur = db.cursor()
-    cur.execute("SELECT owner, title FROM band_services WHERE id = ?", (service_id,))
+    cur.execute("SELECT owner, name FROM band_services WHERE id = ?", (service_id,))
     result = cur.fetchone()
     if result is None:
         return api_error(404, "Not found")
@@ -1070,7 +1071,7 @@ def revoke_service_interest(service_id):
     cur.execute("DELETE FROM band_services_interested WHERE band_service_id = ? AND user_id = ?", (service_id, user_id))
     if cur.rowcount:
         create_notification(db, owner, f'An user is not interested anymore into your service: "{title}"', action_url=f"band_service;{service_id}", picture_url=f"/saed/api/band_service/images/{user_id}")
-    return {}
+    return modified_or_error(cur, 401, "Unauthorized")
 
 
 @app.route(f"{API_PATH}/band_services/images/<int:service_id>")
