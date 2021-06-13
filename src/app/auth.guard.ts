@@ -26,11 +26,13 @@ export class AuthGuard implements CanActivate {
     return new Promise((resolve) => {
       this.authService.isLoggedInSession().subscribe(resp => {
         if (resp.user_id != null) {
+          console.log("------- SONO LOGGATO")
           this.userInfoService.setUserInfo()
           resolve(true);
         } else {
           // necessario quando vengo rimbalzato dal sistema di oauth
           if (this.authService.hasValidAccessToken) {
+            console.log("------- NON SONO LOGGATO MA HO IL TOKEN")
             resolve(true);
           } else {
             resolve(this.router.parseUrl('/login'));

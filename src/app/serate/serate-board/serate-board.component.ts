@@ -22,7 +22,7 @@ export class SerateBoardComponent implements OnInit {
 
   bandServs$: BandServ[] = [];
 
-  bandServsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'bandservs/images/';
+  bandServsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'band_services/images/';
 
   bandServSearchOpt = new FormGroup({
     name: new FormControl(undefined),
@@ -74,7 +74,9 @@ export class SerateBoardComponent implements OnInit {
   }
 
   delete(id?: number): void {
-    this.serateService.deleteBandServ(id).subscribe();
+    this.serateService.deleteBandServ(id).subscribe(_ => {
+      this.search();
+    });
   }
   
   addPreference(band_serv_id?: number): void {

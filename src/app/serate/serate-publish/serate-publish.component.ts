@@ -51,7 +51,7 @@ export class SeratePublishComponent implements OnInit {
     this.serateService.addBandServ(newBandServ).subscribe(
       response => {
         if (this.imageBlob != undefined) {
-          this.serateService.updateBandServImage(response.id, this.imageBlob).subscribe(_ => {
+          this.serateService.updateBandServImage(response.band_serv_id, this.imageBlob).subscribe(_ => {
             this.goBack();
           },
           (error) => {

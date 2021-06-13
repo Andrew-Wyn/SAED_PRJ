@@ -22,7 +22,7 @@ export class MarketBoardComponent implements OnInit {
 
   ads$: Ad[] = [];
 
-  adsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'ads/photos/';
+  adsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'ads/images/';
 
   adSearchOpt = new FormGroup({
     title: new FormControl(undefined),
@@ -68,7 +68,9 @@ export class MarketBoardComponent implements OnInit {
   }
 
   delete(id?: number): void {
-    this.marketService.deleteAd(id).subscribe();
+    this.marketService.deleteAd(id).subscribe(_ => {
+      this.search();
+    });
   }
   
   addPreference(id?: number): void {

@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
 })
 export class HeaderComponent implements OnInit {
 
-  private componentMap: {[key: string]: string} = {ad: "market", band: "band", band_service: "bandServ"}
+  private componentMap: {[key: string]: string} = {ad: "market", band: "band", band_service: "serate"}
 
   /**
    * Handle Http operation that failed.

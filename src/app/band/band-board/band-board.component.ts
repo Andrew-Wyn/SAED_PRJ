@@ -59,7 +59,6 @@ export class BandBoardComponent implements OnInit {
   }
 
   search(): void {
-    this.location.go("/app/band");
     console.log(this.bandSearchOpt.value)
     this.bandService.searchBands(this.bandSearchOpt.value as BandSearchOpt).subscribe(result => {
       console.log(result.results);
@@ -68,7 +67,9 @@ export class BandBoardComponent implements OnInit {
   }
 
   delete(band_id?: number): void {
-    this.bandService.deleteBand(band_id).subscribe();
+    this.bandService.deleteBand(band_id).subscribe(_ => {
+      this.search();
+    });
   }
 
   addPreference(band_id?: number): void {
