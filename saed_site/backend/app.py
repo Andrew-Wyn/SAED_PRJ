@@ -14,7 +14,7 @@ from sqlite3 import IntegrityError, PARSE_DECLTYPES
 import flask
 from flask import Flask, Response, request, redirect, session, jsonify
 from flask_cors import CORS
-from flask_session import Session
+# from flask_session import Session
 
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -25,9 +25,9 @@ root_dir = Path(__file__).parent
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-app.config['SESSION_TYPE'] = 'filesystem'
+# app.config['SESSION_TYPE'] = 'filesystem'
 CORS(app, supports_credentials=True)
-Session(app)
+# Session(app)
 
 API_PATH = "/saed/api"
 MAIN_DB = root_dir/"db.sqlite3"
@@ -774,8 +774,11 @@ def remove_band_member(band_id, member_id):
         return api_error(401, "Unauthorized")
     cur = db.cursor()
     cur.execute("DELETE FROM band_members WHERE band_id = ? AND user_id = ?", (band_id, member_id))
-    return modified_or_error(cur, 404, "Not found")
-
+    if not modified(cur):
+        return api_error(404, "Not found")
+    band_name, _, _, _, _ = band_info(db, band_id)
+    create_notification(db, member_id, f'Your are been removed from the band "{band_name}"', action_url=f"band;{band_id}", picture_url=f"/saed/api/user_image/{user_id}")
+    return {}
 
 BandRecord = namedtuple("BandRecord", "band_id name description band_type owner seeking owner_name owner_email owner_phone rejected member_id")
 

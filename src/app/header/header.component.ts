@@ -56,6 +56,7 @@ export class HeaderComponent implements OnInit {
   }
 
   getNotify() {
+    console.log("asdsad");
     const url = `${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}notifications`;
     this.http.get<Notify[]>(url)
     .pipe(

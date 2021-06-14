@@ -78,6 +78,7 @@ export class AuthService {
     this.oauthService.tryLogin({
       onTokenReceived: context => {
         console.log("logged sucessfull...");
+        this.oauthService.stopAutomaticRefresh();
         //this.configureSession();
       }
     });
@@ -116,6 +117,7 @@ export class AuthService {
       .then(() => {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
+        this.oauthService.stopAutomaticRefresh();
         //this.configureSession();
         //this.userInfoService.setUserInfo();
         this.router.navigate([this.redirectUrl]);

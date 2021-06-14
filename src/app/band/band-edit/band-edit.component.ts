@@ -67,6 +67,7 @@ export class BandEditComponent implements OnInit {
           },
           (error) => {
             console.log(error);
+            alert("Errore " + error.statusText);
             this.goBack();
           });
       });
@@ -77,6 +78,7 @@ export class BandEditComponent implements OnInit {
           },
           (error) => {
             console.log(error);
+            alert("Errore " + error.statusText);
             this.goBack();
           });
     }

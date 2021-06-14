@@ -57,6 +57,7 @@ export class BandPublishComponent implements OnInit {
       },
       (error) => {
         console.log(error);
+        alert("Errore " + error.statusText);
         this.goBack();
       });
   }

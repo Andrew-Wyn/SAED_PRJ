@@ -34,7 +34,7 @@ export class BandService {
 
       // TODO: send the error to remote logging infrastructure
       console.error(error); // log to console instead
-      alert("Errore " + operation);
+      alert("Errore " + error.statusText);
 
       // TODO: better job of transforming error for user consumption
       console.log(`${operation} failed: ${error.message}`);

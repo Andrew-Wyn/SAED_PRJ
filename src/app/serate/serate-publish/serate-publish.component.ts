@@ -58,6 +58,7 @@ export class SeratePublishComponent implements OnInit {
           },
           (error) => {
             console.log(error);
+            alert("Errore " + error.statusText);
             this.goBack();
           });    
         } else {
@@ -66,6 +67,7 @@ export class SeratePublishComponent implements OnInit {
       },
       (error) => {
         console.log(error);
+        alert("Errore " + error.statusText);
         this.goBack();
       });
   }

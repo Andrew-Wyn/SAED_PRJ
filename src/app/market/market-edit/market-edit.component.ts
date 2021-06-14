@@ -71,6 +71,7 @@ export class MarketEditComponent implements OnInit {
           },
           (error) => {
             console.log(error);
+            alert("Errore " + error.statusText);
             this.goBack();
           });
       });
@@ -81,6 +82,7 @@ export class MarketEditComponent implements OnInit {
           },
           (error) => {
             console.log(error);
+            alert("Errore " + error.statusText);
             this.goBack();
           });
     }
