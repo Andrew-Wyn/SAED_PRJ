@@ -69,6 +69,7 @@ export class EditProfileComponent implements OnInit {
           },
           (error) => {
             console.log(error);
+            alert("Errore " + error.statusText);
             this.goBack();
           });
       });
@@ -80,6 +81,7 @@ export class EditProfileComponent implements OnInit {
         },
         (error) => {
           console.log(error);
+          alert("Errore " + error.statusText);
           this.goBack();
         });
     }
