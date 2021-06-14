@@ -33,6 +33,7 @@ export class AuthGuard implements CanActivate {
           // necessario quando vengo rimbalzato dal sistema di oauth
           if (this.authService.hasValidAccessToken) {
             console.log("------- NON SONO LOGGATO MA HO IL TOKEN")
+            this.authService.configureSession();
             resolve(true);
           } else {
             resolve(this.router.parseUrl('/login'));

@@ -56,8 +56,7 @@ export class AuthService {
     this.redirectUrl = "";
   }
 
-  private configureSession() {
-    console.log(typeof this.oauthService.getAccessToken());
+  configureSession() {
     this.http.put<any>(`${GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute}session`, {token:this.oauthService.getAccessToken()} as any, this.httpOptions)
     .pipe(
       tap(_ => console.log('configured session')),
@@ -79,7 +78,7 @@ export class AuthService {
     this.oauthService.tryLogin({
       onTokenReceived: context => {
         console.log("logged sucessfull...");
-        this.configureSession();
+        //this.configureSession();
       }
     });
   }
@@ -117,7 +116,7 @@ export class AuthService {
       .then(() => {
         // chiamare endpoint /api/get_user_info
         console.log("logged sucessfull...");
-        this.configureSession();
+        //this.configureSession();
         //this.userInfoService.setUserInfo();
         this.router.navigate([this.redirectUrl]);
       })
