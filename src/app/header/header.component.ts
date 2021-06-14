@@ -84,6 +84,6 @@ export class HeaderComponent implements OnInit {
     let component = this.componentMap[action_url.split(";")[0]]
     let idObj = action_url.split(";")[1]
     console.log(component, idObj)
-    this.router.navigate(['/app/'+component, { id: idObj }]);
+    this.router.navigate(['app', component, { id: idObj }]);
   }
 }

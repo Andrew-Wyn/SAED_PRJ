@@ -11,7 +11,7 @@ import { Ad } from '../ad'
 import { AdSearchOpt } from '../adSearchOpt'
 
 import * as GLOBALCONFIG from '../../global-config'
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-market-board',
@@ -37,7 +37,7 @@ export class MarketBoardComponent implements OnInit {
     private marketService: MarketService,
     public userInfoService: UserInfoService,
     private route: ActivatedRoute,
-    private location: Location
+    private router: Router
     ) {}
   
   ngOnInit(): void {
@@ -53,14 +53,17 @@ export class MarketBoardComponent implements OnInit {
 
   searchSingleAd(idObj: number) {
     this.marketService.getAd(idObj).subscribe(ad => {
-      this.ads$ = [ad]
+      if (ad != undefined) {
+        this.ads$ = [ad]
+      } else {
+        this.ads$ = []
+      }
     });
   }
 
-  // Push a search term into the observable stream.
   search(): void {
     // eliminate url params id from notification calls
-    this.location.go("/app/market");
+    this.router.navigate(["/app/market"]);
     this.marketService.searchAds(this.adSearchOpt.value as AdSearchOpt).subscribe(result => {
       console.log(result.results);
       this.ads$ = result.results;

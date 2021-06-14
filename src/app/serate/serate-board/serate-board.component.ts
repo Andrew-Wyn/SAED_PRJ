@@ -11,7 +11,7 @@ import { BandServSearchOpt } from '../bandServSearchOpt'
 
 import * as GLOBALCONFIG from '../../global-config'
 import { Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-serate-board',
@@ -34,7 +34,7 @@ export class SerateBoardComponent implements OnInit {
 
   constructor(
     private serateService: SerateService,
-    private location: Location,
+    private router: Router,
     private route: ActivatedRoute,
     public userInfoService: UserInfoService) { }
     
@@ -59,14 +59,18 @@ export class SerateBoardComponent implements OnInit {
   }
 
   searchSingleBandServ(idObj: number) {
-    this.serateService.getBandServ(idObj).subscribe(bendServ => {
-      this.bandServs$ = [bendServ]
+    this.serateService.getBandServ(idObj).subscribe(bandServ => {
+      if (bandServ != undefined) {
+        this.bandServs$ = [bandServ]
+      } else {
+        this.bandServs$ = []
+      }
     });
   }
 
-  // Push a search term into the observable stream.
   search(): void {
-    this.location.go("/app/serate")
+    // eliminate url params id from notification calls
+    this.router.navigate(["/app/serate"]);
     this.serateService.searchBandServs(this.bandServSearchOpt.value as BandServSearchOpt).subscribe(result => {
       this.bandServs$ = result.results;
       console.log("ritornati", this.bandServs$)

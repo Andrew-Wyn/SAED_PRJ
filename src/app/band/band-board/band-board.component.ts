@@ -9,7 +9,7 @@ import { Band } from '../band'
 
 import * as GLOBALCONFIG from '../../global-config'
 import { Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-band-board',
@@ -30,7 +30,7 @@ export class BandBoardComponent implements OnInit {
 
   constructor(
     private bandService: BandService,
-    private location: Location,
+    private router: Router,
     private route: ActivatedRoute,
     public userInfoService: UserInfoService) { }
 
@@ -54,11 +54,17 @@ export class BandBoardComponent implements OnInit {
 
   searchSingleBand(idObj: number) {
     this.bandService.getBand(idObj).subscribe(band => {
-      this.bands$ = [band]
+      if (band != undefined) {
+        this.bands$ = [band]
+      } else {
+        this.bands$ = []
+      }
     });
   }
 
   search(): void {
+    // eliminate url params id from notification calls
+    this.router.navigate(["/app/band"]);
     console.log(this.bandSearchOpt.value)
     this.bandService.searchBands(this.bandSearchOpt.value as BandSearchOpt).subscribe(result => {
       console.log(result.results);
