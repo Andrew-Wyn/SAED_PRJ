@@ -104,7 +104,7 @@ export class MarketService {
   }
 
   updateAdImage(adId?: number, imageBlob?: string | ArrayBuffer | null): Observable<any> {    
-    return this.http.put<any>(`${this.apiURL}ads/photos/${adId}`, imageBlob)
+    return this.http.put<any>(`${this.apiURL}ads/images/${adId}`, imageBlob)
     .pipe(
       tap(_ => console.log('updated user image')),
       catchError(this.handleError<any>('updateUserImage'))

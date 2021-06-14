@@ -19,8 +19,14 @@
                 <input type="text" id="owner" formControlName="owner" placeholder="roprietario ...">
             </div>
             <div>
-                <label for="type">Tipo: </label>
-                <input type="text" id="ad_type" formControlName="ad_type" placeholder="tipo ...">
+                <label for="ad_type">Tipo: </label>
+                <select name="type" id="ad_type" formControlName="ad_type">
+                    <option value="Elettrofono" selected>Elettrofono</option>
+                    <option value="Aerofono">Aerofono</option>
+                    <option value="Cordofono">Cordofono</option>
+                    <option value="Membranofono">Membranofono</option>
+                    <option value="Idiofono">Idiofono</option>
+                </select>                
             </div>
             <div>
                 <label for="type">Descrizione: </label>

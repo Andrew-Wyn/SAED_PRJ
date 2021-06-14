@@ -40,7 +40,7 @@ SUPPORTED_IMAGE_TYPES = {
 }
 DEFAULT_IMAGE_PATH = "no_image.png"
 
-ad_types = "Locale", "Band", "Musicista", "Strumento"
+ad_types = "Elettrofono", "Aerofono", "Cordofono", "Membranofono", "Idiofono"
 user_info_columns = "email", "name", "given_name", "family_name", "musician", "instrument_supplier", "club_owner"
 
 KB = 1024

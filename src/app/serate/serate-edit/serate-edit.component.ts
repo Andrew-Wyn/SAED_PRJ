@@ -13,7 +13,7 @@ import * as GLOBALCONFIG from '../../global-config';
 })
 export class SerateEditComponent implements OnInit {
 
-  bandServsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'band_servs/photos/';
+  bandServsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'band_servs/images/';
   idBandServModify?: number;
   imageBlob?: string | ArrayBuffer | null;
 

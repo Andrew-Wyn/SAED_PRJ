@@ -13,7 +13,7 @@ import * as GLOBALCONFIG from '../../global-config';
 })
 export class MarketEditComponent implements OnInit {
   
-  adsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'ads/photos/';
+  adsImageUrl = GLOBALCONFIG.backEndLocation + GLOBALCONFIG.backEndRoute + 'ads/images/';
   idAdModify?: number;
   imageBlob?: string | ArrayBuffer | null;
 
