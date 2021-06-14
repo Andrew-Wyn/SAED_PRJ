@@ -26,7 +26,8 @@ CREATE TABLE ads (
     description TEXT NOT NULL,
     price INTEGER NOT NULL,
     owner INTEGER NOT NULL REFERENCES users(id),
-    ad_type TEXT NOT NULL
+    ad_type TEXT NOT NULL,
+    rent BOOL NOT NULL
 );
 
 CREATE TABLE ads_interested (

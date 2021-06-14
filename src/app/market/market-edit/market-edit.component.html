@@ -15,6 +15,14 @@
                 <input type="text" id="owner" formControlName="owner">
             </p>
             <p>
+                <label for="description"><b>Descrizione: </b></label>
+                <input type="text" id="description" formControlName="description">
+            </p>
+            <p>
+                <label for="rent"><b>Affitto: </b></label>
+                <input type="checkbox" id="rent" formControlName="rent">
+            </p>
+            <p>
                 <label for="ad_type"><b>Tipo: </b></label>
                 <select name="type" id="ad_type" formControlName="ad_type">
                     <option value="Elettrofono" selected>Elettrofono</option>
@@ -23,10 +31,6 @@
                     <option value="Membranofono">Membranofono</option>
                     <option value="Idiofono">Idiofono</option>
                 </select>                
-            </p>
-            <p>
-                <label for="description"><b>Descrizione: </b></label>
-                <input type="text" id="description" formControlName="description">
             </p>
             <h3>Foto: </h3>
             <img id="picture-icon" [src]="adsImageUrl + idAdModify"/>

@@ -22,6 +22,7 @@ export class MarketPublishComponent implements OnInit {
     description: new FormControl(undefined),
     price: new FormControl(undefined),
     ad_type: new FormControl(undefined),
+    rent: new FormControl(undefined),
   });
 
   constructor(private marketService: MarketService,
@@ -41,7 +42,8 @@ export class MarketPublishComponent implements OnInit {
       title: this.adNewForm.value['title'],
       description: this.adNewForm.value['description'],
       price: this.adNewForm.value['price'],
-      ad_type: this.adNewForm.value['ad_type'],  
+      ad_type: this.adNewForm.value['ad_type'],
+      rent: this.adNewForm.value['rent'],  
     } as Ad
 
     this.marketService.addAd(newAd).subscribe(

@@ -467,7 +467,7 @@ def get_notifications():
     return jsonify([dict(zip(("id", "message", "action_url", "picture_url"), row)) for row in islice(cur, 10)])
 
 
-ad_columns = "id", "title", "description", "price", "owner", "ad_type"
+ad_columns = "id", "title", "description", "price", "owner", "ad_type", "rent"
 user_columns = "name", "email", "phone_number"
 qualified_cols = [*qualify_cols("ads", ad_columns), *qualify_cols("users", user_columns)]
 
@@ -514,6 +514,7 @@ def query_ads():
         ("ad_type = ?", "ad_type", is_in(ad_types)),
         ("title LIKE '%'||?||'%'", "title", identity),
         ("description LIKE '%'||?||'%'", "description", identity),
+        ("rent = ?", "rent", parse_bool)
     )
     for check, arg, validator in checks:
         try:
@@ -540,14 +541,14 @@ def query_ads():
 
 @app.route(f"{API_PATH}/ads/<int:ad_id>", methods=["PUT"])
 @with_session
-@with_json(title=is_a(str), description=is_a(str), price=parse_price, ad_type=is_in(ad_types))
+@with_json(title=is_a(str), description=is_a(str), price=parse_price, ad_type=is_in(ad_types), rent=is_a(bool))
 @connect(db=MAIN_DB)
 def update_ad(ad_id):
-    columns = "title", "description", "price", "ad_type"
+    columns = "title", "description", "price", "ad_type", "rent"
     cur = db.cursor()
     cur.execute(
             f"UPDATE ads SET {updlist(columns)} WHERE id = ? AND owner = ?",
-            (json.title, json.description, json.price, json.ad_type, ad_id, user_id))
+            (json.title, json.description, json.price, json.ad_type, json.rent, ad_id, user_id))
     return modified_or_error(cur, 401, "Unauthorized")
 
 
@@ -562,13 +563,13 @@ def delete_ad(ad_id):
 
 @app.route(f"{API_PATH}/ads", methods=["POST"])
 @with_session
-@with_json(title=is_a(str), description=is_a(str), price=parse_price, ad_type=is_in(ad_types))
+@with_json(title=is_a(str), description=is_a(str), price=parse_price, ad_type=is_in(ad_types), rent=is_a(bool))
 @connect(db=MAIN_DB)
 def add_ad():
     cur = db.cursor()
     cur.execute(
-            f"INSERT INTO ads(title, description, price, owner, ad_type) VALUES ({qmarks(5)})",
-            (json.title, json.description, json.price, user_id, json.ad_type))
+            f"INSERT INTO ads(title, description, price, owner, ad_type, rent) VALUES ({qmarks(6)})",
+            (json.title, json.description, json.price, user_id, json.ad_type, json.rent))
     return {"ad_id": cur.lastrowid}
 
 

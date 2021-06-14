@@ -25,7 +25,8 @@ export class MarketEditComponent implements OnInit {
     price: new FormControl(undefined),
     owner: new FormControl(undefined),
     ad_type: new FormControl(undefined),
-    description: new FormControl(undefined)
+    description: new FormControl(undefined),
+    rent: new FormControl(undefined)
   });
 
   constructor(
@@ -48,7 +49,8 @@ export class MarketEditComponent implements OnInit {
               price: ad.price,
               owner: ad.owner,
               ad_type: ad.ad_type,
-              description: ad.description
+              description: ad.description,
+              rent: ad.rent
             });
             this.valid = true;
           }

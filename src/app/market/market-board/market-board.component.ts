@@ -30,7 +30,8 @@ export class MarketBoardComponent implements OnInit {
     maxPrice: new FormControl(undefined),
     owner: new FormControl(undefined),
     ad_type: new FormControl(undefined),
-    description: new FormControl(undefined)
+    description: new FormControl(undefined),
+    rent: new FormControl(undefined)
   });
 
   constructor(

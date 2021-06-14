@@ -5,5 +5,6 @@ export interface AdSearchOpt {
     owner: string | undefined;
     ad_type: string | undefined;
     destription: string | undefined;
+    rent: boolean | undefined;
     page: number | undefined;
 }

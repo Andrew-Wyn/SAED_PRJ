@@ -19,6 +19,10 @@
                 <input type="text" id="owner" formControlName="owner" placeholder="roprietario ...">
             </div>
             <div>
+                <label for="rent">Affitto: </label>
+                <input type="checkbox" id="rent" formControlName="rent">
+            </div>
+            <div>
                 <label for="ad_type">Tipo: </label>
                 <select name="type" id="ad_type" formControlName="ad_type">
                     <option value="Elettrofono" selected>Elettrofono</option>
@@ -42,10 +46,12 @@
         <div class="card-obj">
             <div><h2>{{ad.title}}</h2></div>
                 <img class="photo" [src]="adsImageUrl + ad.id"/>
-            <p><b>Prezzo:</b>&nbsp;{{ad.price}} &euro;</p>
+            <p><b>Prezzo:</b>&nbsp;{{ad.price}} &euro; <span *ngIf="ad.rent">(a giornata)</span></p>
             <p><b>Proprietario:</b>&nbsp;{{ad.owner}}</p>
             <p><b>Descrizione:</b>&nbsp;{{ad.description}}</p>
             <p><b>Tipo:</b>&nbsp;{{ad.ad_type}}</p>
+            <p *ngIf="ad.rent">Strumento in <b>AFFITTO</b></p>
+            <p *ngIf="!ad.rent">Oggetto in <b>VENDITA</b></p>
             <div class="seller-info" *ngIf="ad.contact_info != null; else nouserinfo">
                 <h2>Informazioni sul Venditore</h2>
                 <p>

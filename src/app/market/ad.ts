@@ -7,4 +7,5 @@ export interface Ad {
     ad_type?: string;
     can_edit?: boolean;
     contact_info?: any;
+    rent?: boolean;
 }
