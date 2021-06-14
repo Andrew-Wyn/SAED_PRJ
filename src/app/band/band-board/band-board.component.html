@@ -71,7 +71,7 @@
                         <b>Richieste</b>
                         <span *ngFor="let request of band.join_requests">
                             <div class="card-section rejected" *ngIf="request.rejected">
-                                {{request.name}}
+                                {{request.name}}&nbsp;<button (click)="acceptRequest(band.id, request.user_id)">Accetta</button>
                             </div>
                             <div class="card-section pending" *ngIf="!request.rejected">
                                 {{request.name}}&nbsp;<button (click)="acceptRequest(band.id, request.user_id)">Accetta</button>&nbsp;<button (click)="declineRequest(band.id, request.user_id)">Declina</button>

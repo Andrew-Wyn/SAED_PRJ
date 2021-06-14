@@ -54,7 +54,7 @@
                     </span>
                     &nbsp;
                     <ng-template #notmine>
-                        <button *ngIf="userInfoService.userInfo.musician" (click)="addPreference(bandServ.band_serv_id)">Aggiungi preferenza</button>
+                        <button *ngIf="userInfoService.userInfo != undefined && userInfoService.userInfo.musician" (click)="addPreference(bandServ.band_serv_id)">Aggiungi preferenza</button>
                     </ng-template>
                 </div>
             </ng-template>
