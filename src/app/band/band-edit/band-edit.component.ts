@@ -1,9 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
-import { Location } from '@angular/common';
 
-import { Band } from '../band'
 import { BandService } from '../band.service';
 
 import * as GLOBALCONFIG from '../../global-config';
@@ -29,13 +27,17 @@ export class BandEditComponent implements OnInit {
     seeking: new FormControl(undefined)
   });
 
-  constructor(private route: ActivatedRoute, private location: Location, private bandService: BandService, private cd: ChangeDetectorRef) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private bandService: BandService,
+    private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       this.idBandModify = JSON.parse(params.get('idBandModify') as any);
       if (this.idBandModify == undefined) {
-        this.location.back();
+        this.goBack();
       } else {
         this.bandService.getBand(this.idBandModify).subscribe(
           band => {
@@ -53,7 +55,7 @@ export class BandEditComponent implements OnInit {
   }
 
   goBack(): void {
-    this.location.go("/app/band");
+    this.router.navigate(["/app/band"]);
   }
 
   save(): void {

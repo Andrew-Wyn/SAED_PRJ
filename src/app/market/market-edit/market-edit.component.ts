@@ -1,9 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
-import { Location } from '@angular/common';
 
-import { Ad } from '../ad'
 import { MarketService } from '../market.service';
 
 import * as GLOBALCONFIG from '../../global-config';
@@ -30,14 +28,18 @@ export class MarketEditComponent implements OnInit {
     description: new FormControl(undefined)
   });
 
-  constructor(private route: ActivatedRoute, private location: Location, private marketService: MarketService, private cd: ChangeDetectorRef) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private marketService: MarketService,
+    private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       this.idAdModify = JSON.parse(params.get('idAdModifiy') as any);
       console.log(this.idAdModify);
       if (this.idAdModify == undefined) {
-        this.location.back();
+        this.goBack();
       } else {
         this.marketService.getAd(this.idAdModify).subscribe(
           ad => {
@@ -56,7 +58,7 @@ export class MarketEditComponent implements OnInit {
   }
 
   goBack(): void {
-    this.location.go("/app/market");
+    this.router.navigate(["/app/market"]);
   }
 
   save(): void {

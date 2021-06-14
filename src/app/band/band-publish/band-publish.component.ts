@@ -1,11 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { FormGroup, FormControl } from '@angular/forms';
-import { Location } from '@angular/common';
 import { BandService } from '../band.service';
 
 import { Band } from '../band'
-import { UserInfoService } from 'src/app/user-info.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-band-publish',
@@ -24,13 +23,16 @@ export class BandPublishComponent implements OnInit {
     seeking: new FormControl(undefined),
   });
 
-  constructor(private bandService: BandService, private location: Location, private userInfoService: UserInfoService, private cd: ChangeDetectorRef) { }
+  constructor(
+    private bandService: BandService,
+    private router: Router,
+    private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
   }
 
   goBack() {
-    this.location.go("/app/band");
+    this.router.navigate(["/app/band"]);
   }
 
   save() {

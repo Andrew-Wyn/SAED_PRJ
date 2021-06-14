@@ -1,11 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { FormGroup, FormControl } from '@angular/forms';
-import { Location } from '@angular/common';
 import { MarketService } from '../market.service';
 
 import { Ad } from '../ad'
-import { UserInfoService } from 'src/app/user-info.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -25,13 +24,15 @@ export class MarketPublishComponent implements OnInit {
     ad_type: new FormControl(undefined),
   });
 
-  constructor(private marketService: MarketService, private location: Location, private userInfoService: UserInfoService, private cd: ChangeDetectorRef) { }
+  constructor(private marketService: MarketService,
+    private router: Router,
+    private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
   }
 
   goBack() {
-    this.location.go("/app/market");
+    this.router.navigate(["/app/market"]);
   }
 
   save() {

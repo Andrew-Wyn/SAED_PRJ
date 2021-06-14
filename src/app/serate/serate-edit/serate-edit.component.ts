@@ -1,9 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
-import { Location } from '@angular/common';
 
-import { BandServ } from '../bandServ'
 import { SerateService } from '../serate.service';
 
 import * as GLOBALCONFIG from '../../global-config';
@@ -31,14 +29,18 @@ export class SerateEditComponent implements OnInit {
     end_time: new FormControl(undefined)
   });
 
-  constructor(private route: ActivatedRoute, private location: Location, private serateService: SerateService, private cd: ChangeDetectorRef) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private serateService: SerateService,
+    private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       this.idBandServModify = JSON.parse(params.get('idBandServModify') as any);
       console.log(this.idBandServModify);
       if (this.idBandServModify == undefined) {
-        this.location.back();
+        this.goBack();
       } else {
         this.serateService.getBandServ(this.idBandServModify).subscribe(
           bandServ => {
@@ -58,7 +60,7 @@ export class SerateEditComponent implements OnInit {
   }
 
   goBack(): void {
-    this.location.go("/app/serate");
+    this.router.navigate(["/app/serate"]);
   }
 
   save(): void {

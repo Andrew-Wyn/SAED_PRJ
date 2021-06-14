@@ -1,6 +1,5 @@
 import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { UserInfoService } from '../user-info.service';
-import { Location } from '@angular/common';
 
 import { UserInfo } from '../userInfo'
 import { Router } from '@angular/router';
@@ -18,7 +17,10 @@ export class EditProfileComponent implements OnInit {
 
   imageBlob?: string | ArrayBuffer | null;
 
-  constructor(public userInfoService: UserInfoService, private location: Location, private cd: ChangeDetectorRef, private router: Router, private authService: AuthService) { }
+  constructor(public userInfoService: UserInfoService,
+    private cd: ChangeDetectorRef,
+    private router: Router,
+    private authService: AuthService) { }
 
   ngOnInit(): void {
     this.getUserInfo();
@@ -51,7 +53,7 @@ export class EditProfileComponent implements OnInit {
 
   
   goBack(): void {
-    this.location.back();
+    this.router.navigate(["/app/home"]);
   }
 
   save(): void {

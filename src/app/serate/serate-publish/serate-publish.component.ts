@@ -1,11 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { FormGroup, FormControl } from '@angular/forms';
-import { Location } from '@angular/common';
 import { SerateService } from '../serate.service';
 
 import { BandServ } from '../bandServ'
-import { UserInfoService } from 'src/app/user-info.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -27,13 +26,16 @@ export class SeratePublishComponent implements OnInit {
     end_time: new FormControl(undefined)
   });
 
-  constructor(private serateService: SerateService, private location: Location, private userInfoService: UserInfoService, private cd: ChangeDetectorRef) { }
+  constructor(
+    private serateService: SerateService,
+    private router: Router,
+    private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
   }
 
   goBack() {
-    this.location.go("/app/serate");
+    this.router.navigate(["/app/serate"]);
   }
 
   save() {
