@@ -22,7 +22,7 @@ export class MarketPublishComponent implements OnInit {
     description: new FormControl(undefined),
     price: new FormControl(undefined),
     ad_type: new FormControl(undefined),
-    rent: new FormControl(undefined),
+    rent: new FormControl(false),
   });
 
   constructor(private marketService: MarketService,
@@ -38,6 +38,8 @@ export class MarketPublishComponent implements OnInit {
 
   save() {
     // create Ad object to load into api
+
+
     let newAd = {
       title: this.adNewForm.value['title'],
       description: this.adNewForm.value['description'],
