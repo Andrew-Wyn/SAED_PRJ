@@ -74,7 +74,6 @@ export class AuthService {
 
   oauthGoogleConfig() {
     this.oauthService.configure(googleAuthConfig);
-    this.oauthService.setupAutomaticSilentRefresh();
     this.oauthService.tryLogin({
       onTokenReceived: context => {
         console.log("logged sucessfull...");
@@ -86,7 +85,6 @@ export class AuthService {
 
   oauthPasswordFlowConfig() {
     this.oauthService.configure(authPasswordFlowConfig);
-    this.oauthService.setupAutomaticSilentRefresh();
     this.oauthService.loadDiscoveryDocument();
   }
 
