@@ -524,12 +524,13 @@ def get_ad(ad_id):
 def query_ads():
     query = QueryGenerator(db, f"SELECT {cols_list(qualified_cols)} FROM ads JOIN users ON ads.owner = users.id")
     checks = (
-        ("price >= ?", "min_price", parse_price),
-        ("price <= ?", "max_price", parse_price),
-        ("ad_type = ?", "ad_type", is_in(ad_types)),
-        ("title LIKE '%'||?||'%'", "title", identity),
-        ("description LIKE '%'||?||'%'", "description", identity),
-        ("rent = ?", "rent", parse_bool)
+        ("ads.price >= ?", "min_price", parse_price),
+        ("ads.price <= ?", "max_price", parse_price),
+        ("ads.ad_type = ?", "ad_type", is_in(ad_types)),
+        ("ads.rent = ?", "rent", parse_bool),
+        ("ads.title LIKE '%'||?||'%'", "title", identity),
+        ("ads.description LIKE '%'||?||'%'", "description", identity),
+        ("users.name LIKE '%'||?||'%'", "owner", identity)
     )
     for check, arg, validator in checks:
         try:
