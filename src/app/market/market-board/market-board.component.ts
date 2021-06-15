@@ -26,8 +26,8 @@ export class MarketBoardComponent implements OnInit {
 
   adSearchOpt = new FormGroup({
     title: new FormControl(undefined),
-    minPrice: new FormControl(undefined),
-    maxPrice: new FormControl(undefined),
+    min_price: new FormControl(undefined),
+    max_price: new FormControl(undefined),
     owner: new FormControl(undefined),
     ad_type: new FormControl(undefined),
     description: new FormControl(undefined),
