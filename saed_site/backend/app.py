@@ -14,7 +14,6 @@ from sqlite3 import IntegrityError, PARSE_DECLTYPES
 import flask
 from flask import Flask, Response, request, redirect, session, jsonify
 from flask_cors import CORS
-# from flask_session import Session
 
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -25,9 +24,7 @@ root_dir = Path(__file__).parent
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-# app.config['SESSION_TYPE'] = 'filesystem'
 CORS(app, supports_credentials=True)
-# Session(app)
 
 API_PATH = "/saed/api"
 MAIN_DB = root_dir/"db.sqlite3"
