@@ -26,7 +26,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 CORS(app, supports_credentials=True)
 
-API_PATH = "/saed/api"
+API_PATH = "/api"
 MAIN_DB = root_dir/"db.sqlite3"
 IMG_DB = root_dir/"img-db.sqlite3"
 SUPPORTED_IMAGE_TYPES = {
