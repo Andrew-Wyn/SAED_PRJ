@@ -20,12 +20,17 @@
             </div>
             <div>
                 <label for="rent">Affitto: </label>
-                <input type="checkbox" id="rent" formControlName="rent">
+                <select name="rent" id="rent" formControlName="rent">
+                    <option value="" selected>Qualsiasi</option>
+                    <option value="true">Affitto</option>
+                    <option value="false">Vendita</option>
+                </select>
             </div>
             <div>
                 <label for="ad_type">Tipo: </label>
-                <select name="type" id="ad_type" formControlName="ad_type">
-                    <option value="Elettrofono" selected>Elettrofono</option>
+                <select name="ad_type" id="ad_type" formControlName="ad_type">
+                    <option value="" selected>Qualsiasi</option>
+                    <option value="Elettrofono">Elettrofono</option>
                     <option value="Aerofono">Aerofono</option>
                     <option value="Cordofono">Cordofono</option>
                     <option value="Membranofono">Membranofono</option>

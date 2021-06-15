@@ -20,7 +20,11 @@
             </div>
             <div>
                 <label for="seeking">Ricerca Membri: </label>
-                <input type="checkbox" id="seeking" formControlName="seeking">
+                <select name="seeking" id="seeking" formControlName="seeking">
+                    <option value="" selected>Qualsiasi</option>
+                    <option value="true">Ricerca</option>
+                    <option value="false">Non Ricerca</option>
+                </select>
             </div>
         </div>
         <button>search</button>
