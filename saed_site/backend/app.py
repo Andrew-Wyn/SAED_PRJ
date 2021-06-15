@@ -274,6 +274,24 @@ def with_json(**fields):
     return decorator
 
 
+def has_flag(flag_name):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            cur = db.cursor()
+            (flag_value,) = cur.execute(f"SELECT {flag_name} FROM users WHERE id = ?", (user_id,))
+            if not flag_value:
+                return api_error(401, "Unauthorized")
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+is_musician = has_flag("musician")
+is_supplier = has_flag("instrument_supplier")
+is_club_owner = has_flag("club_owner")
+
+
 def get_or_create_user(db, img_db, account_type, email, name, given_name=None, family_name=None, picture_url=None):
     cur = db.cursor()
     cur.execute("SELECT id FROM users WHERE account_type = ? AND email = ?", (account_type, email))
@@ -562,6 +580,7 @@ def delete_ad(ad_id):
 @with_session
 @with_json(title=is_a(str), description=is_a(str), price=parse_price, ad_type=is_in(ad_types), rent=is_a(bool))
 @connect(db=MAIN_DB)
+@is_supplier
 def add_ad():
     cur = db.cursor()
     cur.execute(
@@ -652,6 +671,7 @@ def is_service_owner(db, user_id, service_id):
 @with_session
 @with_json(name=is_a(str), description=is_a(str), band_type=is_a(str), seeking=is_a(bool))
 @connect(db=MAIN_DB)
+@is_musician
 def add_band():
     cur = db.cursor()
     cur.execute(
@@ -687,6 +707,7 @@ def set_band_seeking(band_id):
 @app.route(f"{API_PATH}/bands/<int:band_id>/join_request", methods=["PUT"])
 @with_session
 @connect(db=MAIN_DB)
+@is_musician
 def send_band_join_request(band_id):
     if band_member(db, user_id, band_id):
         return api_error(401, "Unauthorized")
@@ -715,6 +736,7 @@ def remove_band_join_request(band_id):
     cur = db.cursor()
     cur.execute("DELETE FROM band_applicants WHERE band_id = ? AND user_id = ? AND NOT rejected", (band_id, user_id))
     return modified_or_error(cur, 401, "Unauthorized")
+
 
 def accept_band_join_request(db, band_id, applicant_id):
     cur = db.cursor()
@@ -905,6 +927,7 @@ def set_band_image(band_id):
 @with_session
 @with_json(name=is_a(str), description=is_a(str), band_type=is_a(str), date=date.fromisoformat, start_time=time.fromisoformat, end_time=time.fromisoformat)
 @connect(db=MAIN_DB)
+@is_club_owner
 def add_band_service():
     cur = db.cursor()
     start_date = datetime.combine(json.date, json.start_time)
@@ -1041,6 +1064,7 @@ def query_band_service():
 @app.route(f"{API_PATH}/band_services/interested/<int:service_id>", methods=["POST"])
 @with_session
 @connect(db=MAIN_DB)
+@is_musician
 def signal_service_interest(service_id):
     cur = db.cursor()
     cur.execute("SELECT owner, name FROM band_services WHERE id = ?", (service_id,))
