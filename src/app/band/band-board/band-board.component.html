@@ -12,7 +12,7 @@
             </div>
             <div>
                 <label for="band_type">Tipo Band: </label>
-                <input type="text" id="description" formControlName="description" placeholder="tipo band ...">
+                <input type="text" id="band_type" formControlName="band_type" placeholder="tipo band ...">
             </div>
             <div>
                 <label for="owner">Proprietario: </label>
@@ -21,7 +21,7 @@
             <div>
                 <label for="seeking">Ricerca Membri: </label>
                 <select name="seeking" id="seeking" formControlName="seeking">
-                    <option value="" selected>Qualsiasi</option>
+                    <option value="" [selected]="true">Qualsiasi</option>
                     <option value="true">Ricerca</option>
                     <option value="false">Non Ricerca</option>
                 </select>
