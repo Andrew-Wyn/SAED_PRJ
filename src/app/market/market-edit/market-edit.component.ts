@@ -26,7 +26,7 @@ export class MarketEditComponent implements OnInit {
     owner: new FormControl(undefined),
     ad_type: new FormControl(undefined),
     description: new FormControl(undefined),
-    rent: new FormControl(undefined)
+    rent: new FormControl(false)
   });
 
   constructor(

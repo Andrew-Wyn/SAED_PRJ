@@ -36,6 +36,7 @@ export class BandPublishComponent implements OnInit {
   }
 
   save() {
+    console.log("checkbox -> ", this.bandNewForm.value['seeking']);
     // create Ad object to load into api
     let newBand = {
       name: this.bandNewForm.value['name'],

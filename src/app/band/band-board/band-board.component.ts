@@ -25,7 +25,7 @@ export class BandBoardComponent implements OnInit {
     description: new FormControl(undefined),
     band_type: new FormControl(undefined),
     owner: new FormControl(undefined),
-    seeking: new FormControl(undefined)
+    seeking: new FormControl(false)
   });
 
   constructor(

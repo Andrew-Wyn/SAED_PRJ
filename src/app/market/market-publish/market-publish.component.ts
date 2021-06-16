@@ -39,6 +39,7 @@ export class MarketPublishComponent implements OnInit {
   save() {
     // create Ad object to load into api
 
+    console.log("checkbox -> ", this.adNewForm.value['rent']);
 
     let newAd = {
       title: this.adNewForm.value['title'],
