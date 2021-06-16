@@ -56,7 +56,7 @@
             <p><b>Descrizione:</b>&nbsp;{{ad.description}}</p>
             <p><b>Tipo:</b>&nbsp;{{ad.ad_type}}</p>
             <p *ngIf="ad.rent">Strumento in <b>AFFITTO</b></p>
-            <p *ngIf="!ad.rent">Oggetto in <b>VENDITA</b></p>
+            <p *ngIf="!ad.rent">Strumento in <b>VENDITA</b></p>
             <div class="seller-info" *ngIf="ad.contact_info != null; else nouserinfo">
                 <h2>Informazioni sul Venditore</h2>
                 <p>
