@@ -881,7 +881,7 @@ def query_bands():
     checks = (
         ("bands.name LIKE '%'||?||'%'", "name", identity),
         ("bands.description LIKE '%'||?||'%'", "description", identity),
-        ("bands.band_type LIKE '%'||?||'%'", "type", identity),
+        ("bands.band_type LIKE '%'||?||'%'", "band_type", identity),
         ("users.name LIKE '%'||?||'%'", "owner", identity),
         ("bands.seeking = ?", "seeking", parse_bool)
     )
