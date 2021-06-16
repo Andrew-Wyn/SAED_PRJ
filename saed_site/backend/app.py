@@ -492,6 +492,7 @@ def make_ad_object(db, record, user_id):
     ret["can_edit"] = (ret["owner"] == user_id)
     ret["owner"] = record["users.name"]
     ret["price"] = price_str(ret["price"])
+    ret["rent"] = bool(ret["rent"])
     cur = db.cursor()
     cur.execute(
             "SELECT NULL FROM ads_interested WHERE ad_id = ? AND user_id = ?",
